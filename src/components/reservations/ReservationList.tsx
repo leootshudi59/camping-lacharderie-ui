@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
 
@@ -11,6 +12,7 @@ type Reservation = {
   endDate: string;
   email: string;
   phone: string;
+  lastInventoryId?: string;
 };
 
 const mockReservations: Reservation[] = [
@@ -22,6 +24,7 @@ const mockReservations: Reservation[] = [
     endDate: '2025-07-17',
     email: 'dupont@example.com',
     phone: '+33612345678',
+    lastInventoryId: '1',
   },
   {
     id: '2',
@@ -31,6 +34,7 @@ const mockReservations: Reservation[] = [
     endDate: '2025-07-19',
     email: 'martin@example.com',
     phone: '+33687654321',
+    lastInventoryId: '2',
   },
   {
     id: '3',
@@ -181,8 +185,9 @@ export default function ReservationList() {
           <div className="col-span-full py-12 text-center text-gray-400">Aucune réservation trouvée.</div>
         ) : (
           filtered.map((res) => (
-            <div
+            <Link
               key={res.id}
+              href={`/admin/reservations/${res.id}`}
               className="bg-white rounded-xl shadow p-4 border border-gray-100 hover:shadow-md transition flex flex-col"
             >
               <h3 className="text-lg font-semibold text-green-700 mb-1">{res.resName}</h3>
@@ -199,10 +204,10 @@ export default function ReservationList() {
                 <Phone className="w-4 h-4" />
                 {res.phone}
               </div>
-              <button className="mt-auto px-4 py-2 rounded-md text-sm bg-green-600 text-white hover:bg-green-700 transition w-full">
-                Voir l’état des lieux
-              </button>
-            </div>
+              <div className="mt-auto px-4 py-2 rounded-md text-sm bg-green-600 text-white text-center">
+                Voir la fiche
+              </div>
+            </Link>
           ))
         )}
       </div>
