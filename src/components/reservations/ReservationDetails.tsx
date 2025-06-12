@@ -34,6 +34,16 @@ const mockInventories = [
     {
         id: '2',
         reservationId: '2',
+        type: 0, // entrée
+        createdAt: '2025-07-19',
+        comment: 'Inventaire d’arrivée : tout est en bon état.',
+        items: [
+            { inventoryItemId: '3', name: 'Tente', quantity: 1, condition: 'Usé' },
+        ],
+    },
+    {
+        id: '3',
+        reservationId: '2',
         type: 1, // sortie
         createdAt: '2025-07-19',
         comment: 'Inventaire de départ : meubles rendus sans dommage.',
@@ -64,7 +74,7 @@ export default function ReservationDetails({ reservation }: ReservationDetailsPr
                     onClick={() => goToInventory('arrivee')}
                     className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                 >
-                    Faire l’état des lieux d’arrivée
+                    Faire l'état des lieux d'arrivée
                 </button>
             );
         }
@@ -76,13 +86,13 @@ export default function ReservationDetails({ reservation }: ReservationDetailsPr
                         onClick={() => goToInventory('arrivee')}
                         className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
-                        Modifier état des lieux d’arrivée
+                        Modifier état des lieux d'arrivée
                     </button>
                     <button
                         onClick={() => goToInventory('depart')}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
-                        Faire l’état des lieux de départ
+                        Faire l'état des lieux de départ
                     </button>
                 </>
             );

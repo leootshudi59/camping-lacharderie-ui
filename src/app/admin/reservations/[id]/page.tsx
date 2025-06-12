@@ -34,7 +34,7 @@ const mockReservations: Reservation[] = [
         endDate: '2025-07-19',
         email: 'martin@example.com',
         phone: '+33687654321',
-        lastInventoryId: '2',
+        lastInventoryId: '3',
     },
     {
         id: '3',
