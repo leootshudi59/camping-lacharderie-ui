@@ -1,14 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { mockEvents } from '@/mocks/mockEvents';
 import { Event } from '@/types/event';
 import EventForm from './EventForm';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import Loader from '@/components/ui/Loader';
+
 
 export default function EventList() {
-  const [events, setEvents] = useState<Event[]>(mockEvents);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setEvents(mockEvents);   // on « reçoit » les données
+      setLoading(false);       // on coupe le spinner
+    }, 600);                   // 0,6 s de latence simulée
+    return () => clearTimeout(timer);
+  }, []);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
 
@@ -47,72 +57,75 @@ export default function EventList() {
         </button>
       </div>
 
-      {/* Table desktop */}
-      <div className="hidden sm:block bg-white rounded-xl shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-green-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Titre</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Début</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Fin</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Lieu</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      {loading ? <Loader size={12} className="py-16" /> : (
+        <>
+          {/* Table desktop */}
+          <div className="hidden sm:block bg-white rounded-xl shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-green-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Titre</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Début</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Fin</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Lieu</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.map((event) => (
+                  <tr key={event.event_id} className="hover:bg-green-50 transition">
+                    <td className="px-4 py-3 font-semibold text-gray-800">{event.title}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {format(new Date(event.start_date), 'dd MMM yyyy HH:mm', { locale: fr })}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {format(new Date(event.end_date), 'dd MMM yyyy HH:mm', { locale: fr })}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{event.location}</td>
+                    <td className="px-4 py-3 flex gap-2">
+                      <button
+                        className="p-2 rounded hover:bg-yellow-100"
+                        onClick={() => handleEditClick(event)}
+                      >
+                        Modifier
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="sm:hidden space-y-4">
             {events.map((event) => (
-              <tr key={event.event_id} className="hover:bg-green-50 transition">
-                <td className="px-4 py-3 font-semibold text-gray-800">{event.title}</td>
-                <td className="px-4 py-3 text-gray-600">
-                  {format(new Date(event.start_date), 'dd MMM yyyy HH:mm', { locale: fr })}
-                </td>
-                <td className="px-4 py-3 text-gray-600">
-                  {format(new Date(event.end_date), 'dd MMM yyyy HH:mm', { locale: fr })}
-                </td>
-                <td className="px-4 py-3 text-gray-600">{event.location}</td>
-                <td className="px-4 py-3 flex gap-2">
+              <div key={event.event_id} className="bg-white rounded-xl shadow p-4 space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">{event.title}</h3>
+                    <p className="text-sm text-gray-500">
+                      {format(new Date(event.start_date), 'dd MMM yyyy HH:mm', { locale: fr })} –{' '}
+                      {format(new Date(event.end_date), 'dd MMM yyyy HH:mm', { locale: fr })}
+                    </p>
+                    {event.location && (
+                      <p className="text-sm text-gray-500">{event.location}</p>
+                    )}
+                  </div>
                   <button
-                    className="p-2 rounded hover:bg-yellow-100"
+                    className="p-2 rounded hover:bg-yellow-100 text-yellow-700 font-medium text-xs"
                     onClick={() => handleEditClick(event)}
                   >
                     Modifier
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="sm:hidden space-y-4">
-        {events.map((event) => (
-          <div key={event.event_id} className="bg-white rounded-xl shadow p-4 space-y-2">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-bold text-gray-800">{event.title}</h3>
-                <p className="text-sm text-gray-500">
-                  {format(new Date(event.start_date), 'dd MMM yyyy HH:mm', { locale: fr })} –{' '}
-                  {format(new Date(event.end_date), 'dd MMM yyyy HH:mm', { locale: fr })}
-                </p>
-                {event.location && (
-                  <p className="text-sm text-gray-500">{event.location}</p>
+                </div>
+                {event.description && (
+                  <p className="text-sm text-gray-600">{event.description}</p>
                 )}
               </div>
-              <button
-                className="p-2 rounded hover:bg-yellow-100 text-yellow-700 font-medium text-xs"
-                onClick={() => handleEditClick(event)}
-              >
-                Modifier
-              </button>
-            </div>
-            {event.description && (
-              <p className="text-sm text-gray-600">{event.description}</p>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
-
+        </>
+      )}
       {/* Modal */}
       <EventForm
         isOpen={modalOpen}

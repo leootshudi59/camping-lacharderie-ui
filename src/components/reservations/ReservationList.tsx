@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
+import Loader from '@/components/ui/Loader';
 
 type Reservation = {
   id: string;
@@ -60,13 +61,25 @@ function isDateInRange(
   return true;
 }
 
+
 export default function ReservationList() {
+  const [loading, setLoading] = useState(true);
+  const [reservations, setReservations] = useState<Reservation[]>([]);    // NEW
+
   const [search, setSearch] = useState('');
   const [startFilter, setStartFilter] = useState('');
   const [endFilter, setEndFilter] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const filtered = mockReservations.filter((res) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setReservations(mockReservations);  // on met les données
+      setLoading(false);                  // on arrête le loader
+    }, 600);                              // 0,6 s pour l’exemple
+    return () => clearTimeout(timer);
+  }, []);   
+
+  const filtered = reservations.filter((res) => {
     const matchText =
       res.resName.toLowerCase().includes(search.toLowerCase()) ||
       res.rentalName.toLowerCase().includes(search.toLowerCase());
@@ -75,6 +88,10 @@ export default function ReservationList() {
 
     return matchText && matchDate;
   });
+
+  if (loading) {
+    return <Loader size={12} className="py-20" />;
+  }
 
   return (
     <div>
