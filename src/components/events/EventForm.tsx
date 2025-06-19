@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Event } from '@/types/event';
+import { notifySuccess, notifyError } from '@/lib/toast';
 
 export type EventFormData = {
   event_id: string;
@@ -49,9 +50,16 @@ export default function EventForm({ isOpen, onClose, onSubmit, initialData }: Ev
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    onSubmit?.(formData);
-    setLoading(false);
-    onClose();
+    try {
+      // ... appel API ou mock ...
+      notifySuccess(formData.event_id ? 'Événement mis à jour !' : 'Événement créé !');
+      onSubmit?.(formData);      // logique existante
+      onClose();                 // ferme la modale
+    } catch (err) {
+      notifyError('Erreur : impossible d’enregistrer');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
