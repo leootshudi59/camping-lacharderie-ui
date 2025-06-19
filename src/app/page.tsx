@@ -16,10 +16,10 @@ export default function Home() {
           priority
         />
         <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-2 tracking-tight text-center">
-          Bienvenue au Camping Les Vacances
+          Bienvenue au Camping [Nom du Camping]
         </h1>
         <p className="text-gray-600 text-lg text-center">
-          Profitez de votre séjour &amp; gérez tout facilement ici !
+          Profitez de votre séjour et gérez tout facilement ici !
         </p>
       </header>
 
