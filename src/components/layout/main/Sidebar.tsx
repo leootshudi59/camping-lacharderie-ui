@@ -1,8 +1,7 @@
 'use client';
-
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, AlertTriangle, ShoppingCart, CalendarDays, MapPinned } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Home, AlertTriangle, ShoppingCart, CalendarDays, MapPinned, LogOut } from 'lucide-react';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -19,6 +18,7 @@ const navItems = [
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <>
@@ -38,6 +38,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               );
             })}
           </nav>
+
+          <button 
+            className="mt-auto flex items-center p-2 rounded-lg hover:bg-red-100 text-red-600"
+            onClick={() => {
+              localStorage.removeItem('reservationUser');
+              router.replace('/login');
+            }}
+          >
+            <LogOut className="w-5 h-5 mr-2" />
+            Déconnexion
+          </button>
         </div>
       </aside>
 

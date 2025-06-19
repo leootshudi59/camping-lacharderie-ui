@@ -1,66 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import ClientAuthGuard from '@/components/auth/ClientAuthGuard';
 import { CalendarDays, ShoppingCart, AlertTriangle, MapPinned } from "lucide-react";
+import ClientHome from "@/components/client/ClientHome";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header / Logo */}
-      <header className="flex flex-col items-center justify-center py-10 px-4">
-        <Image
-          src="/logo-camping.svg"
-          alt="Logo Camping"
-          width={80}
-          height={80}
-          className="mb-4"
-          priority
-        />
-        <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-2 tracking-tight text-center">
-          Bienvenue au Camping Les Vacances
-        </h1>
-        <p className="text-gray-600 text-lg text-center">
-          Profitez de votre séjour &amp; gérez tout facilement ici !
-        </p>
-      </header>
-
-      {/* Accès rapides */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl">
-          <Link href="/inventory" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
-            <AlertTriangle className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
-            <div>
-              <span className="text-lg font-semibold text-gray-800">État des lieux</span>
-              <p className="text-gray-500 text-sm">Remplir votre inventaire d’arrivée</p>
-            </div>
-          </Link>
-          <Link href="/bread-order" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
-            <ShoppingCart className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
-            <div>
-              <span className="text-lg font-semibold text-gray-800">Pain & Commandes</span>
-              <p className="text-gray-500 text-sm">Commander du pain ou autres produits</p>
-            </div>
-          </Link>
-          <Link href="/events" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
-            <CalendarDays className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
-            <div>
-              <span className="text-lg font-semibold text-gray-800">Événements</span>
-              <p className="text-gray-500 text-sm">Découvrir les animations du camping</p>
-            </div>
-          </Link>
-          <Link href="/map" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
-            <MapPinned className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
-            <div>
-              <span className="text-lg font-semibold text-gray-800">Carte du camping</span>
-              <p className="text-gray-500 text-sm">Se repérer facilement sur place</p>
-            </div>
-          </Link>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-8 text-center text-xs text-gray-400">
-        © {new Date().getFullYear()} Camping Les Vacances – Application réalisée par l’équipe digitale.
-      </footer>
-    </div>
+    <ClientAuthGuard>
+      <ClientHome />
+    </ClientAuthGuard>
   );
 }

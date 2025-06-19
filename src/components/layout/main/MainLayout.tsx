@@ -11,7 +11,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <div className="flex h-screen overflow-hidden">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="flex flex-col flex-1 overflow-auto md:ml-64">
+      <div className="flex flex-col flex-1 overflow-auto">
         <header className="flex items-center justify-between bg-white shadow-sm p-4 sticky top-0 z-10">
           <button
             className="md:hidden"
@@ -20,7 +20,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           >
             <Menu className="w-6 h-6 text-green-600" />
           </button>
-          <h2 className="text-xl font-semibold text-gray-700">Camping Les Vacances 🌲</h2>
+          <h2 className="text-xl font-semibold text-gray-700">Camping [Nom du Camping] 🌲</h2>
         </header>
 
         {/* Content */}
