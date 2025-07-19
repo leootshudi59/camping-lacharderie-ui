@@ -15,9 +15,9 @@ export default function QuickIdentityForm() {
 
   // Mock : les paires valides
   const mockValidReservations = [
-    { name: 'Dupont', reservationNumber: '12345' },
-    { name: 'Martin', reservationNumber: '23456' },
-    { name: 'Durand', reservationNumber: '34567' },
+    { name: 'Dupont', reservationNumber: '12345', rentalName: "15", endDate: '2025-07-17' },
+    { name: 'Martin', reservationNumber: '23456', rentalName: "Tente 3A", endDate: '2025-07-19' },
+    { name: 'Legrand', reservationNumber: '34567', rentalName: "Cabane 8", endDate: '2025-07-22' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,23 +27,28 @@ export default function QuickIdentityForm() {
 
     // Simulation backend : vérif dans le mock
     await new Promise((res) => setTimeout(res, 700));
-    const found = mockValidReservations.some(
+
+    const foundReservation = mockValidReservations.find(
       (r) =>
         r.name.trim().toLowerCase() === name.trim().toLowerCase() &&
         r.reservationNumber.trim() === reservationNumber.trim()
     );
 
     setLoading(false);
-    if (!found) {
+
+    if (!foundReservation) {
       setError("Nom ou numéro de réservation invalide.");
       return;
     }
+
     localStorage.setItem(
-        'reservationUser',
-        JSON.stringify({
-          name: name.trim(),
-          reservationNumber: reservationNumber.trim()
-        })
+      'reservationUser',
+      JSON.stringify({
+        name: name.trim(),
+        reservationNumber: reservationNumber.trim(),
+        rentalName: foundReservation?.rentalName || '',
+        endDate: foundReservation?.endDate || ''
+      })
     );
     // Success, go to accueil campeur
     router.replace('/');
@@ -81,7 +86,7 @@ export default function QuickIdentityForm() {
               required
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Ex : Dupont"
+              placeholder="Ex : Dupont"
               autoComplete="off"
             />
           </div>
@@ -95,7 +100,7 @@ export default function QuickIdentityForm() {
               required
               onChange={(e) => setReservationNumber(e.target.value)}
               className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Ex : 12345"
+              placeholder="Ex : 12345"
               autoComplete="off"
             />
           </div>

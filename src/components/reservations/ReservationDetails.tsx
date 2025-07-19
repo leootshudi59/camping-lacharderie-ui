@@ -1,7 +1,7 @@
 'use client';
 
 import { CalendarDays, Mail, Phone, User2, ArrowLeft, ClipboardList } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -17,6 +17,7 @@ type ReservationDetailsProps = {
         endDate: string;
         lastInventoryId?: string;
     };
+    mode?: 'admin' | 'client';
 };
 
 const mockInventories = [
@@ -36,7 +37,7 @@ const mockInventories = [
         reservationId: '2',
         type: 0, // entrée
         createdAt: '2025-07-19',
-        comment: 'Inventaire d’arrivée : tout est en bon état.',
+        comment: 'Inventaire d\'arrivée : tout est en bon état.',
         items: [
             { inventoryItemId: '3', name: 'Tente', quantity: 1, condition: 'Usé' },
         ],
@@ -53,8 +54,10 @@ const mockInventories = [
     },
 ];
 
-export default function ReservationDetails({ reservation }: ReservationDetailsProps) {
+export default function ReservationDetails({ reservation, mode }: ReservationDetailsProps) {
     const router = useRouter();
+    const pathname = usePathname();
+
     console.log("reservation", reservation)
 
     const goToInventory = (type: 'arrivee' | 'depart') => {
@@ -63,68 +66,76 @@ export default function ReservationDetails({ reservation }: ReservationDetailsPr
         );
     };
 
+    // Back button in admin, not in client
+    const showBackButton = mode === "admin";
+
     const lastInventory = mockInventories.find(
         (inv) => inv.id === reservation.lastInventoryId
     );
 
     const renderButtons = () => {
-        if (!lastInventory) {
-            return (
-                <button
-                    onClick={() => goToInventory('arrivee')}
-                    className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
-                >
-                    Faire l'état des lieux d'arrivée
-                </button>
-            );
-        }
-
-        if (lastInventory.type === 0) {
-            return (
-                <>
+        if (mode === 'admin') {
+            if (!lastInventory) {
+                return (
                     <button
                         onClick={() => goToInventory('arrivee')}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
+                        className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
-                        Modifier état des lieux d'arrivée
+                        Faire l'état des lieux d'arrivée
                     </button>
+                );
+            }
+    
+            if (lastInventory.type === 0) {
+                return (
+                    <>
+                        <button
+                            onClick={() => goToInventory('arrivee')}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
+                        >
+                            Modifier état des lieux d'arrivée
+                        </button>
+                        <button
+                            onClick={() => goToInventory('depart')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
+                        >
+                            Faire l'état des lieux de départ
+                        </button>
+                    </>
+                );
+            }
+    
+            if (lastInventory.type === 1) {
+                return (
                     <button
                         onClick={() => goToInventory('depart')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
-                        Faire l'état des lieux de départ
+                        Modifier les inventaires
                     </button>
-                </>
-            );
+                );
+            }
+    
+            return null;
         }
-
-        if (lastInventory.type === 1) {
-            return (
-                <button
-                    onClick={() => goToInventory('depart')}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
-                >
-                    Modifier les inventaires
-                </button>
-            );
-        }
-
-        return null;
+        return null
     };
 
     return (
         <div className="max-w-3xl mx-auto bg-white shadow rounded-xl p-6 space-y-6">
 
             {/* Retour */}
-            <div className="block sm:hidden mb-2">
-                <button
-                    onClick={() => router.push('/admin/reservations')}
-                    className="flex items-center text-green-600 hover:text-green-800 text-sm font-medium transition"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-1" />
-                    Retour à la liste
-                </button>
-            </div>
+            {showBackButton && (
+                <div className="block sm:hidden mb-2">
+                    <button
+                        onClick={() => router.push('/admin/reservations')}
+                        className="flex items-center text-green-600 hover:text-green-800 text-sm font-medium transition"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-1" />
+                        Retour à la liste
+                    </button>
+                </div>
+            )}
 
             <h2 className="text-2xl font-bold text-green-700 text-center">
                 Réservation {reservation.resName}
@@ -165,7 +176,7 @@ export default function ReservationDetails({ reservation }: ReservationDetailsPr
                 <div className="mt-6 space-y-4">
                     <div className="flex items-center gap-2 font-semibold text-gray-800">
                         <ClipboardList className="w-5 h-5 text-green-600" />
-                        <span>Résumé de l’inventaire</span>
+                        <span>Résumé de l'inventaire</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

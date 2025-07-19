@@ -20,7 +20,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           >
             <Menu className="w-6 h-6 text-green-600" />
           </button>
-          <h2 className="text-xl font-semibold text-gray-700">Camping [Nom du Camping] 🌲</h2>
+          <h2 className="text-xl font-semibold text-gray-700">Camping La Charderie 🌲</h2>
         </header>
 
         {/* Content */}

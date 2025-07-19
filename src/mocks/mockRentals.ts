@@ -37,7 +37,7 @@ export const mockRentals: Rental[] = [
   },
   {
     rental_id: '4',
-    name: 'Mobil-Home 17',
+    name: '15',
     type: 'Mobil-home',
     description: 'Mobil-home récent, 2 couchages, terrasse couverte.',
     status: 'disponible',

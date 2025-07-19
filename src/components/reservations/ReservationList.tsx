@@ -18,9 +18,9 @@ type Reservation = {
 
 const mockReservations: Reservation[] = [
   {
-    id: '1',
+    id: '12345',
     resName: 'Famille Dupont',
-    rentalName: 'Mobil-Home 17',
+    rentalName: '15',
     startDate: '2025-07-10',
     endDate: '2025-07-17',
     email: 'dupont@example.com',
@@ -28,7 +28,7 @@ const mockReservations: Reservation[] = [
     lastInventoryId: '1',
   },
   {
-    id: '2',
+    id: '23456',
     resName: 'Groupe Martin',
     rentalName: 'Tente 3A',
     startDate: '2025-07-12',
@@ -38,7 +38,7 @@ const mockReservations: Reservation[] = [
     lastInventoryId: '2',
   },
   {
-    id: '3',
+    id: '34567',
     resName: 'Solo Legrand',
     rentalName: 'Cabane 8',
     startDate: '2025-07-15',

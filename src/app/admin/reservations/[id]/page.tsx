@@ -10,7 +10,7 @@ export default function ReservationPage({ params }: { params: { id: string } }) 
 
     return (
         <div className="max-w-3xl mx-auto">
-            <ReservationDetails reservation={reservation} />
+            <ReservationDetails reservation={reservation} mode="admin" />
         </div>
     );
 }

@@ -2,10 +2,10 @@ import { Reservation } from '@/types/reservation';
 
 export const mockReservations: Reservation[] = [
     {
-        id: '1',
-        resName: 'Famille Dupont',
+        id: '12345',
+        resName: 'Dupont',
         rentalId: '4',
-        rentalName: 'Mobil-Home 17',
+        rentalName: '15',
         startDate: '2025-07-10',
         endDate: '2025-07-17',
         email: 'dupont@example.com',
@@ -13,7 +13,7 @@ export const mockReservations: Reservation[] = [
         lastInventoryId: '1',
     },
     {
-        id: '2',
+        id: '23456',
         resName: 'Groupe Martin',
         rentalId: '1',
         rentalName: 'Tente 3A',
@@ -24,7 +24,7 @@ export const mockReservations: Reservation[] = [
         lastInventoryId: '3',
     },
     {
-        id: '3',
+        id: '34567',
         resName: 'Solo Legrand',
         rentalId: '8',
         rentalName: 'Cabane 8',

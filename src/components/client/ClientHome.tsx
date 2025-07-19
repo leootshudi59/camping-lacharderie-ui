@@ -34,7 +34,7 @@ export default function ClientHome() {
           className="mb-4"
         />
         <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-2 tracking-tight text-center">
-          Bienvenue au Camping [Nom du Camping]
+          Bienvenue au Camping La Charderie
         </h1>
         <p className="text-gray-600 text-lg text-center">
           Profitez de votre séjour et gérez tout facilement ici !
@@ -80,8 +80,8 @@ export default function ClientHome() {
           <Link href="/bread-order" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
             <ShoppingCart className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
             <div>
-              <span className="text-lg font-semibold text-gray-800">Pain & Commandes</span>
-              <p className="text-gray-500 text-sm">Commander du pain ou autres produits</p>
+              <span className="text-lg font-semibold text-gray-800">Commandes</span>
+              <p className="text-gray-500 text-sm">Commander du pain, ou autres produits pour petit déjeuner</p>
             </div>
           </Link>
           <Link href="/events" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
@@ -103,7 +103,7 @@ export default function ClientHome() {
 
       {/* Footer */}
       <footer className="py-8 text-center text-xs text-gray-400">
-        © {new Date().getFullYear()} Camping Les Vacances – Application réalisée par l’équipe digitale.
+        © {new Date().getFullYear()} La Charderie — Application réalisée par Léo Otshudi.
       </footer>
     </div>
   );
