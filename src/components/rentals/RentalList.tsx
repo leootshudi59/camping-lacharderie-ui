@@ -1,33 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Eye, Pencil, PlusCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import RentalForm, { RentalFormData } from './RentalForm';
 import RentalDetails from './RentalDetails';
 import { mockRentals } from '@/mocks/mockRentals';
 import { Rental } from '@/types/rental';
+import Loader from '../ui/Loader';
 
 
 const statusColors: Record<string, string> = {
-    'disponible': 'bg-green-100 text-green-800',
-    'occupé': 'bg-yellow-100 text-yellow-800',
-    'problème': 'bg-red-100 text-red-800',
+    'Disponible': 'bg-green-100 text-green-800',
+    'Occupé': 'bg-yellow-100 text-yellow-800',
+    'Problème': 'bg-red-100 text-red-800',
+};
+
+const backendToUi: Record<string, 'Disponible' | 'Occupé' | 'Problème'> = {
+    available: 'Disponible',
+    busy:      'Occupé',
+    issue:     'Problème',      // ajuste si ton API renvoie autre chose
 };
 
 
 export default function RentalList() {
-    const [rentals, setRentals] = useState<Rental[]>(mockRentals);
+    const [rentals, setRentals] = useState<Rental[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    /* ⟱⟱ récup du token stocké après login ⟱⟱ */
+    const getToken = () => {
+        try {
+            return localStorage.getItem('jwt') ?? '';
+        } catch {
+            return '';
+        }
+    };
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedRental, setSelectedRental] = useState<RentalFormData | null>(null);
 
     const [detailsModalOpen, setDetailsModalOpen] = useState(false);
     const [selectedDetailsRental, setSelectedDetailsRental] = useState<Rental | null>(null);
 
+    useEffect(() => {
+        const fetchRentals = async () => {
+            try {
+                const res = await fetch('/api/rentals', {
+                    headers: { Authorization: `Bearer ${getToken()}` },
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message ?? 'Erreur');
+                const withUiStatus: Rental[] = data.map((r: any) => ({
+                    ...r,
+                    status: backendToUi[r.status] ?? 'Disponible', // fallback
+                }));
+                setRentals(withUiStatus);
+            } catch (e: any) {
+                setError(e.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRentals();
+    }, []);
+
     const handleViewClick = (rental: Rental) => {
         setSelectedDetailsRental(rental);
         setDetailsModalOpen(true);
     };
-
 
     const handleAddClick = () => {
         setSelectedRental(null);
@@ -39,18 +79,37 @@ export default function RentalList() {
         setModalOpen(true);
     };
 
-    const handleSubmit = (data: RentalFormData) => {
-        if (data.rental_id) {
-            setRentals((prev) =>
-                prev.map((r) => (r.rental_id === data.rental_id ? { ...r, ...data } : r))
-            );
-        } else {
-            setRentals((prev) => [
-                ...prev,
-                { ...data, rental_id: Math.random().toString(36).substring(2, 9) },
-            ]);
+    const handleSubmit = async (rfData: RentalFormData) => {
+        try {
+            console.log("handleSubmit")
+            const res = await fetch('/api/rentals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                body: JSON.stringify(rfData),
+            });
+            const created = await res.json();
+            console.log("created", created)
+            if (!res.ok) throw new Error(created.message ?? 'Erreur');
+
+            const campsite: Rental = {
+                ...created,
+                status: backendToUi[created.status] ?? 'Disponible'
+            }
+
+            setRentals(prev => [...prev, campsite])
+        } catch (error) {
+            console.log(error);
         }
     };
+
+    if (loading) return <Loader className="h-56" />;
+    if (error) {
+        return (
+            <div className="text-center text-red-600 my-6">
+                Impossible de charger les locatifs : {error}
+            </div>
+        );
+    }
 
     return (
         <div className="w-full">
@@ -79,7 +138,7 @@ export default function RentalList() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {rentals.map((rental) => (
-                            <tr key={rental.rental_id} className="hover:bg-green-50 transition">
+                            <tr key={rental.campsite_id} className="hover:bg-green-50 transition">
                                 <td className="px-4 py-3 font-semibold text-gray-800">{rental.name}</td>
                                 <td className="px-4 py-3 text-gray-600">{rental.type}</td>
                                 <td className="px-4 py-3 text-gray-500">{rental.description}</td>
@@ -119,7 +178,7 @@ export default function RentalList() {
             <div className="space-y-4 sm:hidden">
                 {rentals.map((rental) => (
                     <div
-                        key={rental.rental_id}
+                        key={rental.campsite_id}
                         className="bg-white rounded-xl shadow p-4 space-y-2"
                     >
                         {rental.image && (

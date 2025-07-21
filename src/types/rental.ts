@@ -10,11 +10,11 @@ export type Reservation = {
 };
 
 export type Rental = {
-    rental_id: string;
+    campsite_id: string;
     name: string;
     type: string;
     description: string;
-    status: 'disponible' | 'occupé' | 'problème';
+    status: 'Disponible' | 'Occupé' | 'Problème';
     image?: string;
     current_reservation?: Reservation;
 };  

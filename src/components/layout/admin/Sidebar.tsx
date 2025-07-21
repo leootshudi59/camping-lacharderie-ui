@@ -11,7 +11,7 @@ interface SidebarProps {
 
 const navItems = [
   { name: 'Dashboard', icon: Home, href: '/admin' },
-  { name: 'Locatifs', icon: Home, href: '/admin/rentals' },
+  { name: 'Locatifs', icon: Home, href: '/admin/campsites' },
   { name: 'Inventaires', icon: ClipboardCheck, href: '/admin/inventories' },
   { name: 'Commandes', icon: ShoppingCart, href: '/admin/orders' },
   { name: 'Problèmes', icon: AlertTriangle, href: '/admin/issues' },
