@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Calendar, Mail, Phone, PlusCircle, Search, SlidersHorizontal, X } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
 
@@ -35,7 +35,9 @@ export default function ReservationList() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [reservations, setReservations] = useState<Booking[]>([]);    // NEW
+  const [reservations, setReservations] = useState<Booking[]>([]);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+
 
   const [search, setSearch] = useState('');
   const [startFilter, setStartFilter] = useState('');
@@ -112,15 +114,24 @@ export default function ReservationList() {
   }
 
   return (
-    <div>
-      {/* Filtres - mobile : bouton, desktop : affiché */}
-      <div className="sm:hidden mb-4">
-        <button
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow hover:bg-green-700 transition"
-          onClick={() => setFiltersOpen(true)}
-        >
-          <SlidersHorizontal className="w-5 h-5" />
-          Filtres
+    <div className="w-full">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
+      <h1 className="text-2xl font-bold text-gray-800">Réservations en cours</h1>
+      <button
+        onClick={() => setAddModalOpen(true)}
+        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
+      >
+        + Ajouter une réservation
+      </button>
+      </div>
+        
+        <div className="sm:hidden mb-4">
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow hover:bg-green-700 transition"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+            Filtres
         </button>
         {/* Drawer/Modal de filtres */}
         {filtersOpen && (
@@ -246,6 +257,8 @@ export default function ReservationList() {
           ))
         )}
       </div>
+      {/* Filtres - mobile : bouton, desktop : affiché */}
+      
     </div>
   );
 }
