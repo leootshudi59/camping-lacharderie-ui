@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Calendar, Mail, Phone, PlusCircle, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
+import BookingForm, { BookingFormData } from './BookingForm';
 
 type Booking = {
   booking_id: string;
@@ -31,26 +32,18 @@ function isDateInRange(
 }
 
 
-export default function ReservationList() {
+export default function BookingList() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reservations, setReservations] = useState<Booking[]>([]);
+  const [campsites, setCampsites] = useState<{ campsite_id: string; name: string; type?: string }[]>([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
-
 
   const [search, setSearch] = useState('');
   const [startFilter, setStartFilter] = useState('');
   const [endFilter, setEndFilter] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
-
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setReservations(mockReservations);  // on met les données
-  //     setLoading(false);                  // on arrête le loader
-  //   }, 600);                              // 0,6 s pour l’exemple
-  //   return () => clearTimeout(timer);
-  // }, []);  
   
   useEffect(() => {
     const fetchReservations = async () => {
@@ -78,6 +71,31 @@ export default function ReservationList() {
     fetchReservations();
   }, [token]);
 
+  useEffect(() => {
+    const fetchCampsites = async () => {
+      try {
+        if (!token) return;
+        console.log("token", token);
+        setLoading(true);
+
+        const res = await fetch('/api/rentals', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        const mapped = Array.isArray(data)
+          ? data.map(mapCampsite)
+          : [];
+        setCampsites(mapped);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchCampsites();
+  }, [token]);
+
   /**
    * Maps a booking from the API to a Reservation object
    * @param apiRes Booking from the API
@@ -99,6 +117,14 @@ export default function ReservationList() {
     };
   }
 
+  const mapCampsite = (campsite: any): { campsite_id: string; name: string; type?: string } => {
+    return {
+      campsite_id: campsite.campsite_id,
+      name: campsite.name,
+      type: campsite.type,
+    };
+  };
+
   const filtered = reservations.filter((res) => {
     const matchText =
       res.res_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -108,6 +134,33 @@ export default function ReservationList() {
 
     return matchText && matchDate;
   });
+
+  const handleSubmit = async (bData: BookingFormData) => {
+      try {
+        const withTime = (date: string, time = '14:00:00') =>
+          date ? `${date}T${time}Z` : undefined;
+
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            ...bData,
+            start_date: withTime(bData.start_date, '12:00:00'),
+            end_date: withTime(bData.end_date, '15:00:00'),
+          }),
+        });
+
+        const created = await res.json();
+        console.log("created", created)
+        if (!res.ok) throw new Error(created.message ?? 'Erreur');
+
+        const booking: Booking = created;
+        setReservations(prev => [...prev, booking])
+        window.location.reload();
+    } catch (error) {
+        console.log(error);
+    }
+  };
 
   if (loading) {
     return <Loader size={12} className="py-20" />;
@@ -258,7 +311,14 @@ export default function ReservationList() {
         )}
       </div>
       {/* Filtres - mobile : bouton, desktop : affiché */}
-      
+      {addModalOpen && (
+        <BookingForm
+          isOpen={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          onSubmit={handleSubmit}
+          campsites={campsites}
+        />
+      )}
     </div>
   );
 }

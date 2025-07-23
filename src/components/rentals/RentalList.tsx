@@ -24,7 +24,7 @@ const backendToUi: Record<string, 'Disponible' | 'Occupé' | 'Problème'> = {
 
 
 export default function RentalList() {
-    const [rentals, setRentals] = useState<Rental[]>([]);
+    const [campsites, setCampsites] = useState<Rental[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -54,7 +54,7 @@ export default function RentalList() {
                     ...r,
                     status: backendToUi[r.status] ?? 'Disponible', // fallback
                 }));
-                setRentals(withUiStatus);
+                setCampsites(withUiStatus);
             } catch (e: any) {
                 setError(e.message);
             } finally {
@@ -96,7 +96,7 @@ export default function RentalList() {
                 status: backendToUi[created.status] ?? 'Disponible'
             }
 
-            setRentals(prev => [...prev, campsite])
+            setCampsites(prev => [...prev, campsite])
         } catch (error) {
             console.log(error);
         }
@@ -137,7 +137,7 @@ export default function RentalList() {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {rentals.map((rental) => (
+                        {campsites.map((rental) => (
                             <tr key={rental.campsite_id} className="hover:bg-green-50 transition">
                                 <td className="px-4 py-3 font-semibold text-gray-800">{rental.name}</td>
                                 <td className="px-4 py-3 text-gray-600">{rental.type}</td>
@@ -176,7 +176,7 @@ export default function RentalList() {
 
             {/* Vue mobile (card) */}
             <div className="space-y-4 sm:hidden">
-                {rentals.map((rental) => (
+                {campsites.map((rental) => (
                     <div
                         key={rental.campsite_id}
                         className="bg-white rounded-xl shadow p-4 space-y-2"

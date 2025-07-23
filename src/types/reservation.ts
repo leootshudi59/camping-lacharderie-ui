@@ -1,7 +1,7 @@
 export type Reservation = {
     id: string;
     resName: string;
-    rentalId: string;
+    campsite_id: string;
     rentalName: string;
     startDate: string;
     endDate: string;
