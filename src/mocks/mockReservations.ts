@@ -4,7 +4,7 @@ export const mockReservations: Reservation[] = [
     {
         id: '12345',
         resName: 'Dupont',
-        rentalId: '4',
+        campsite_id: '4',
         rentalName: '15',
         startDate: '2025-07-10',
         endDate: '2025-07-17',
@@ -15,7 +15,7 @@ export const mockReservations: Reservation[] = [
     {
         id: '23456',
         resName: 'Groupe Martin',
-        rentalId: '1',
+        campsite_id: '1',
         rentalName: 'Tente 3A',
         startDate: '2025-07-12',
         endDate: '2025-07-19',
@@ -26,7 +26,7 @@ export const mockReservations: Reservation[] = [
     {
         id: '34567',
         resName: 'Solo Legrand',
-        rentalId: '8',
+        campsite_id: '8',
         rentalName: 'Cabane 8',
         startDate: '2025-07-15',
         endDate: '2025-07-22',

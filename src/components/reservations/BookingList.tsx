@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
+import { useAuth } from '@/context/AuthContext';
+import BookingForm, { BookingFormData } from './BookingForm';
 
-type Reservation = {
-  id: string;
-  resName: string;
-  rentalName: string;
+type Booking = {
+  booking_id: string;
+  res_name: string;
+  campsite_name: string;
   startDate: string; // format YYYY-MM-DD
   endDate: string;
   email: string;
@@ -16,40 +18,8 @@ type Reservation = {
   lastInventoryId?: string;
 };
 
-const mockReservations: Reservation[] = [
-  {
-    id: '12345',
-    resName: 'Famille Dupont',
-    rentalName: '15',
-    startDate: '2025-07-10',
-    endDate: '2025-07-17',
-    email: 'dupont@example.com',
-    phone: '+33612345678',
-    lastInventoryId: '1',
-  },
-  {
-    id: '23456',
-    resName: 'Groupe Martin',
-    rentalName: 'Tente 3A',
-    startDate: '2025-07-12',
-    endDate: '2025-07-19',
-    email: 'martin@example.com',
-    phone: '+33687654321',
-    lastInventoryId: '2',
-  },
-  {
-    id: '34567',
-    resName: 'Solo Legrand',
-    rentalName: 'Cabane 8',
-    startDate: '2025-07-15',
-    endDate: '2025-07-22',
-    email: 'legrand@example.com',
-    phone: '+33699999999',
-  },
-];
-
 function isDateInRange(
-  res: Reservation,
+  res: Booking,
   startFilter: string,
   endFilter: string
 ): boolean {
@@ -62,47 +32,159 @@ function isDateInRange(
 }
 
 
-export default function ReservationList() {
+export default function BookingList() {
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [reservations, setReservations] = useState<Reservation[]>([]);    // NEW
+  const [error, setError] = useState('');
+  const [reservations, setReservations] = useState<Booking[]>([]);
+  const [campsites, setCampsites] = useState<{ campsite_id: string; name: string; type?: string }[]>([]);
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   const [search, setSearch] = useState('');
   const [startFilter, setStartFilter] = useState('');
   const [endFilter, setEndFilter] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        if (!token) return;
+        console.log("token", token);
+        setLoading(true);
+
+        const res = await fetch('/api/bookings', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        console.log("data", data);
+        const mapped = Array.isArray(data)
+          ? data.map(mapReservation)
+          : [];
+        setReservations(mapped);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchReservations();
+  }, [token]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setReservations(mockReservations);  // on met les données
-      setLoading(false);                  // on arrête le loader
-    }, 600);                              // 0,6 s pour l’exemple
-    return () => clearTimeout(timer);
-  }, []);   
+    const fetchCampsites = async () => {
+      try {
+        if (!token) return;
+        console.log("token", token);
+        setLoading(true);
+
+        const res = await fetch('/api/rentals', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        const mapped = Array.isArray(data)
+          ? data.map(mapCampsite)
+          : [];
+        setCampsites(mapped);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchCampsites();
+  }, [token]);
+
+  /**
+   * Maps a booking from the API to a Reservation object
+   * @param apiRes Booking from the API
+   * @returns Reservation object
+   */
+  function mapReservation(apiRes: any): Booking {
+    const formatDate = (iso: string) =>
+      iso ? new Date(iso).toLocaleDateString('fr-FR') : '';
+  
+    return {
+      booking_id: apiRes.booking_id,
+      res_name: apiRes.res_name,
+      campsite_name: apiRes.campsite_name,
+      startDate: formatDate(apiRes.start_date),
+      endDate: formatDate(apiRes.end_date),
+      email: apiRes.email || 'non renseigné',
+      phone: apiRes.phone || 'non renseigné',
+      lastInventoryId: apiRes.inventory_id || undefined,
+    };
+  }
+
+  const mapCampsite = (campsite: any): { campsite_id: string; name: string; type?: string } => {
+    return {
+      campsite_id: campsite.campsite_id,
+      name: campsite.name,
+      type: campsite.type,
+    };
+  };
 
   const filtered = reservations.filter((res) => {
     const matchText =
-      res.resName.toLowerCase().includes(search.toLowerCase()) ||
-      res.rentalName.toLowerCase().includes(search.toLowerCase());
+      res.res_name.toLowerCase().includes(search.toLowerCase()) ||
+      res.campsite_name.toLowerCase().includes(search.toLowerCase());
 
     const matchDate = isDateInRange(res, startFilter, endFilter);
 
     return matchText && matchDate;
   });
 
+  const handleSubmit = async (bData: BookingFormData) => {
+      try {
+        const withTime = (date: string, time = '14:00:00') =>
+          date ? `${date}T${time}Z` : undefined;
+
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            ...bData,
+            start_date: withTime(bData.start_date, '12:00:00'),
+            end_date: withTime(bData.end_date, '15:00:00'),
+          }),
+        });
+
+        const created = await res.json();
+        console.log("created", created)
+        if (!res.ok) throw new Error(created.message ?? 'Erreur');
+
+        const booking: Booking = created;
+        setReservations(prev => [...prev, booking])
+        window.location.reload();
+    } catch (error) {
+        console.log(error);
+    }
+  };
+
   if (loading) {
     return <Loader size={12} className="py-20" />;
   }
 
   return (
-    <div>
-      {/* Filtres - mobile : bouton, desktop : affiché */}
-      <div className="sm:hidden mb-4">
-        <button
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow hover:bg-green-700 transition"
-          onClick={() => setFiltersOpen(true)}
-        >
-          <SlidersHorizontal className="w-5 h-5" />
-          Filtres
+    <div className="w-full">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
+      <h1 className="text-2xl font-bold text-gray-800">Réservations en cours</h1>
+      <button
+        onClick={() => setAddModalOpen(true)}
+        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
+      >
+        + Ajouter une réservation
+      </button>
+      </div>
+        
+        <div className="sm:hidden mb-4">
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow hover:bg-green-700 transition"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+            Filtres
         </button>
         {/* Drawer/Modal de filtres */}
         {filtersOpen && (
@@ -203,12 +285,12 @@ export default function ReservationList() {
         ) : (
           filtered.map((res) => (
             <Link
-              key={res.id}
-              href={`/admin/reservations/${res.id}`}
+              key={res.booking_id}
+              href={`/admin/reservations/${res.booking_id}`}
               className="bg-white rounded-xl shadow p-4 border border-gray-100 hover:shadow-md transition flex flex-col"
             >
-              <h3 className="text-lg font-semibold text-green-700 mb-1">{res.resName}</h3>
-              <p className="text-sm text-gray-600 mb-2">{res.rentalName}</p>
+              <h3 className="text-lg font-semibold text-green-700 mb-1">{res.res_name}</h3>
+              <p className="text-sm text-gray-600 mb-2">{res.campsite_name}</p>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-1">
                 <Calendar className="w-4 h-4" />
                 {res.startDate} → {res.endDate}
@@ -228,6 +310,15 @@ export default function ReservationList() {
           ))
         )}
       </div>
+      {/* Filtres - mobile : bouton, desktop : affiché */}
+      {addModalOpen && (
+        <BookingForm
+          isOpen={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          onSubmit={handleSubmit}
+          campsites={campsites}
+        />
+      )}
     </div>
   );
 }
