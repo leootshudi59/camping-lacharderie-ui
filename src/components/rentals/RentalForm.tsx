@@ -16,7 +16,7 @@ export type RentalFormData = {
     name: string;
     type: string;
     description: string;
-    status: 'disponible' | 'occupé' | 'problème';
+    status: 'Disponible' | 'Occupé' | 'Problème';
     image?: string; // base64 temporairement
 };
 
@@ -24,7 +24,7 @@ const defaultData: RentalFormData = {
     name: '',
     type: '',
     description: '',
-    status: 'disponible',
+    status: 'Disponible',
     image: ''
 };
 
@@ -129,9 +129,9 @@ export default function RentalForm({ isOpen, onClose, onSubmit, initialData }: R
                             onChange={handleChange}
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                         >
-                            <option value="disponible">Disponible</option>
-                            <option value="occupé">Occupé</option>
-                            <option value="problème">Problème</option>
+                            <option value="available">Disponible</option>
+                            <option value="busy">Occupé</option>
+                            <option value="issue">Problème</option>
                         </select>
                     </div>
 
