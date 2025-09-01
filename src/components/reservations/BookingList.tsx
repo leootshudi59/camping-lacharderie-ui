@@ -182,21 +182,31 @@ export default function BookingList() {
           <button
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow hover:bg-green-700 transition"
             onClick={() => setFiltersOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={filtersOpen}
+            aria-controls="filters-modal"
           >
-            <SlidersHorizontal className="w-5 h-5" />
+            <SlidersHorizontal className="w-5 h-5" aria-hidden="true" focusable="false" />
             Filtres
         </button>
         {/* Drawer/Modal de filtres */}
         {filtersOpen && (
-          <div className="fixed inset-0 z-40 flex justify-center items-end bg-black/40">
+          <div 
+            id="filters-modal"
+            className="fixed inset-0 z-40 flex justify-center items-end bg-black/40"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="filters-title"    
+          >
             <div className="bg-white w-full rounded-t-2xl p-6 max-w-md shadow-lg animate-slideup">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold">Filtres</span>
+                <span className="text-lg font-semibold" id="filters-title">Filtres</span>
                 <button
                   className="text-gray-400 hover:text-gray-700"
                   onClick={() => setFiltersOpen(false)}
+                  aria-label="Fermer les filtres"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6" aria-hidden="true" focusable="false"/>
                 </button>
               </div>
               <div className="space-y-3">
@@ -288,19 +298,20 @@ export default function BookingList() {
               key={res.booking_id}
               href={`/admin/reservations/${res.booking_id}`}
               className="bg-white rounded-xl shadow p-4 border border-gray-100 hover:shadow-md transition flex flex-col"
+              aria-label={`Voir la fiche de la réservation ${res.res_name}`}
             >
               <h3 className="text-lg font-semibold text-green-700 mb-1">{res.res_name}</h3>
               <p className="text-sm text-gray-600 mb-2">{res.campsite_name}</p>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-1">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4" aria-hidden="true" focusable="false" />
                 {res.startDate} → {res.endDate}
               </div>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-1">
-                <Mail className="w-4 h-4" />
+                <Mail className="w-4 h-4" aria-hidden="true" focusable="false" />
                 {res.email}
               </div>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-3">
-                <Phone className="w-4 h-4" />
+                <Phone className="w-4 h-4" aria-hidden="true" focusable="false" />
                 {res.phone}
               </div>
               <div className="mt-auto px-4 py-2 rounded-md text-sm bg-green-600 text-white text-center">
