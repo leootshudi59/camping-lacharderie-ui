@@ -2,21 +2,27 @@
 
 import { CalendarDays, Mail, Phone, User2, ArrowLeft, ClipboardList } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect, useState } from 'react';
+import { useApp } from '@/context/AppContext';
+import { Booking } from '@/types/reservation';
+import Loader from '../ui/Loader';
 
 type ReservationDetailsProps = {
-    reservation: {
-        id: string;
-        resName: string;
-        rentalId: string;
-        rentalName: string;
-        email?: string;
-        phone?: string;
-        startDate: string;
-        endDate: string;
-        lastInventoryId?: string;
-    };
+    // reservation: {
+    //     booking_id: string;
+    //     resName: string;
+    //     campsite_id: string;
+    //     campsiteName: string;
+    //     email?: string;
+    //     phone?: string;
+    //     startDate: string;
+    //     endDate: string;
+    //     lastInventoryId?: string;
+    // };
+    booking_id: string;
     mode?: 'admin' | 'client';
 };
 
@@ -26,7 +32,7 @@ const mockInventories = [
         reservationId: '1',
         type: 0, // entrée
         createdAt: '2025-07-10',
-        comment: 'Inventaire d’arrivée : tout est en bon état.',
+        comment: 'Inventaire d\'arrivée : tout est en bon état.',
         items: [
             { inventoryItemId: '1', name: 'Chaises', quantity: 4, condition: 'Une des chaises a un pied qui boite' },
             { inventoryItemId: '2', name: 'Table', quantity: 1, condition: 'Neuf' },
@@ -54,15 +60,21 @@ const mockInventories = [
     },
 ];
 
-export default function ReservationDetails({ reservation, mode }: ReservationDetailsProps) {
+export default function ReservationDetails({ booking_id, mode }: ReservationDetailsProps) {
+    const { token } = useAuth();
+    const { mapReservation } = useApp()
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
+
     const router = useRouter();
     const pathname = usePathname();
 
-    console.log("reservation", reservation)
+    // console.log("reservation", reservation)
 
     const goToInventory = (type: 'arrivee' | 'depart') => {
         router.push(
-            `/admin/inventory-form?reservation_id=${reservation.id}&rental_id=${reservation.rentalId}&type=${type}`
+            `/admin/inventory-form?reservation_id=${currentBooking?.booking_id}&rental_id=${currentBooking?.campsite_id}&type=${type}`
         );
     };
 
@@ -70,8 +82,45 @@ export default function ReservationDetails({ reservation, mode }: ReservationDet
     const showBackButton = mode === "admin";
 
     const lastInventory = mockInventories.find(
-        (inv) => inv.id === reservation.lastInventoryId
+        (inv) => inv.id === currentBooking?.lastInventoryId
     );
+    const start = currentBooking?.startDate ? parseISO(currentBooking.startDate) : null;
+    const end   = currentBooking?.endDate   ? parseISO(currentBooking.endDate)   : null;
+
+
+    useEffect(() => {
+        const fetchBookingById = async () => {
+            try {
+                if (!token || !booking_id) return;
+                console.log("token", token);
+                setLoading(true);
+
+                const res = await fetch(`/api/bookings/${booking_id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (res.status === 404) {
+                    setCurrentBooking(null);         // affichera “introuvable”
+                    return;
+                } 
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                const data = await res.json();
+                console.log("data", data);
+                const mappedBooking: Booking = mapReservation(data);
+                console.log("Mapped data", mappedBooking)
+
+                setCurrentBooking(mappedBooking);
+            } catch (e: any) {
+                setError(e.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        if (mode === 'admin') fetchBookingById();
+    }, [token, booking_id, mapReservation]);
+
 
     const renderButtons = () => {
         if (mode === 'admin') {
@@ -85,7 +134,7 @@ export default function ReservationDetails({ reservation, mode }: ReservationDet
                     </button>
                 );
             }
-    
+
             if (lastInventory.type === 0) {
                 return (
                     <>
@@ -104,7 +153,7 @@ export default function ReservationDetails({ reservation, mode }: ReservationDet
                     </>
                 );
             }
-    
+
             if (lastInventory.type === 1) {
                 return (
                     <button
@@ -115,11 +164,13 @@ export default function ReservationDetails({ reservation, mode }: ReservationDet
                     </button>
                 );
             }
-    
+
             return null;
         }
         return null
     };
+
+    if (loading) return <Loader className="h-56" />;
 
     return (
         <div className="max-w-3xl mx-auto bg-white shadow rounded-xl p-6 space-y-6">
@@ -138,36 +189,36 @@ export default function ReservationDetails({ reservation, mode }: ReservationDet
             )}
 
             <h2 className="text-2xl font-bold text-green-700 text-center">
-                Réservation {reservation.resName}
+                Réservation {currentBooking?.resName}
             </h2>
 
             {/* Infos réservation */}
             <div className="space-y-3">
                 <div className="flex items-center gap-3 text-gray-700">
                     <User2 className="w-5 h-5 text-green-500" />
-                    <span>{reservation.resName}</span>
+                    <span>{currentBooking?.resName}</span>
                 </div>
-                {reservation.email && (
+                {currentBooking?.email && (
                     <div className="flex items-center gap-3 text-gray-700">
                         <Mail className="w-5 h-5 text-green-500" />
-                        <span>{reservation.email}</span>
+                        <span>{currentBooking?.email}</span>
                     </div>
                 )}
-                {reservation.phone && (
+                {currentBooking?.phone && (
                     <div className="flex items-center gap-3 text-gray-700">
                         <Phone className="w-5 h-5 text-green-500" />
-                        <span>{reservation.phone}</span>
+                        <span>{currentBooking.phone}</span>
                     </div>
                 )}
                 <div className="flex items-center gap-3 text-gray-700">
                     <CalendarDays className="w-5 h-5 text-green-500" />
                     <span>
-                        {format(new Date(reservation.startDate), 'dd MMM yyyy', { locale: fr })} →{' '}
-                        {format(new Date(reservation.endDate), 'dd MMM yyyy', { locale: fr })}
+                    {start && isValid(start) ? format(start, 'dd MMM yyyy', { locale: fr }) : '—'} →{' '}
+                    {end && isValid(end) ? format(end, 'dd MMM yyyy', { locale: fr }) : '—'}
                     </span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-700">
-                    🛏️ <span>Hébergement : <strong>{reservation.rentalName}</strong></span>
+                    🛏️ <span>Hébergement : <strong>{currentBooking?.campsiteName}</strong></span>
                 </div>
             </div>
 

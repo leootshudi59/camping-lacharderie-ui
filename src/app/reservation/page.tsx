@@ -17,7 +17,7 @@ export default function ClientReservationPage() {
     const reservation = mockReservations.find(
         (r) =>
             r.resName.toLowerCase() === user?.name?.toLowerCase() &&
-            r.id === user?.reservationNumber
+            r.booking_id === user?.reservationNumber
     );
 
     // Si rien, on gère l’erreur/404 (améliore si besoin)

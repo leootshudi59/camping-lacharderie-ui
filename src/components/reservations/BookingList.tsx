@@ -6,11 +6,12 @@ import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-reac
 import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
 import BookingForm, { BookingFormData } from './BookingForm';
+import { useApp } from '@/context/AppContext';
 
 type Booking = {
   booking_id: string;
-  res_name: string;
-  campsite_name: string;
+  resName: string;
+  campsiteName: string;
   startDate: string; // format YYYY-MM-DD
   endDate: string;
   email: string;
@@ -34,10 +35,11 @@ function isDateInRange(
 
 export default function BookingList() {
   const { token } = useAuth();
+  const { campsites, setCampsites, reservations, setReservations} = useApp();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [reservations, setReservations] = useState<Booking[]>([]);
-  const [campsites, setCampsites] = useState<{ campsite_id: string; name: string; type?: string }[]>([]);
+  // const [reservations, setReservations] = useState<Booking[]>([]);
+  // const [campsites, setCampsites] = useState<{ campsite_id: string; name: string; type?: string }[]>([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
 
   const [search, setSearch] = useState('');
@@ -107,8 +109,8 @@ export default function BookingList() {
   
     return {
       booking_id: apiRes.booking_id,
-      res_name: apiRes.res_name,
-      campsite_name: apiRes.campsite_name,
+      resName: apiRes.res_name,
+      campsiteName: apiRes.campsite_name,
       startDate: formatDate(apiRes.start_date),
       endDate: formatDate(apiRes.end_date),
       email: apiRes.email || 'non renseigné',
@@ -127,8 +129,8 @@ export default function BookingList() {
 
   const filtered = reservations.filter((res) => {
     const matchText =
-      res.res_name.toLowerCase().includes(search.toLowerCase()) ||
-      res.campsite_name.toLowerCase().includes(search.toLowerCase());
+      res.resName.toLowerCase().includes(search.toLowerCase()) ||
+      res.campsiteName.toLowerCase().includes(search.toLowerCase());
 
     const matchDate = isDateInRange(res, startFilter, endFilter);
 
@@ -298,10 +300,10 @@ export default function BookingList() {
               key={res.booking_id}
               href={`/admin/reservations/${res.booking_id}`}
               className="bg-white rounded-xl shadow p-4 border border-gray-100 hover:shadow-md transition flex flex-col"
-              aria-label={`Voir la fiche de la réservation ${res.res_name}`}
+              aria-label={`Voir la fiche de la réservation ${res.resName}`}
             >
-              <h3 className="text-lg font-semibold text-green-700 mb-1">{res.res_name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{res.campsite_name}</p>
+              <h3 className="text-lg font-semibold text-green-700 mb-1">{res.resName}</h3>
+              <p className="text-sm text-gray-600 mb-2">{res.campsiteName}</p>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-1">
                 <Calendar className="w-4 h-4" aria-hidden="true" focusable="false" />
                 {res.startDate} → {res.endDate}
