@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import AuthForm from '@/components/auth/AuthForm';
+
+export const metadata: Metadata = {
+  title: "Connexion admin",
+  robots: { index: false, follow: false },
+  alternates: { canonical: "/admin/login" },
+};
 
 export default function AdminLoginPage() {
   return (
