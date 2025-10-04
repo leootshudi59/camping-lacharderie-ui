@@ -116,7 +116,7 @@ export default function RentalDetails({ rental }: RentalDetailsProps) {
                     <div className="mt-3 text-right">
                         <button
                             className="text-green-600 text-sm font-semibold hover:underline"
-                            onClick={() => router.push(`/admin/reservations/${current_reservation.reservation_id}`)}
+                            onClick={() => router.push(`/admin/bookings/${current_reservation.reservation_id}`)}
                         >
                             Voir la fiche
                         </button>

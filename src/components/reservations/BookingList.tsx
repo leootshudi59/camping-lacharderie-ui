@@ -298,7 +298,7 @@ export default function BookingList() {
           filtered.map((res) => (
             <Link
               key={res.booking_id}
-              href={`/admin/reservations/${res.booking_id}`}
+              href={`/admin/bookings/${res.booking_id}`}
               className="bg-white rounded-xl shadow p-4 border border-gray-100 hover:shadow-md transition flex flex-col"
               aria-label={`Voir la fiche de la réservation ${res.resName}`}
             >
