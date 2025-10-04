@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import type { Booking } from '@/types/reservation';
 
 type Campsite = { campsite_id: string; name: string; type?: string };
@@ -34,8 +34,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
      */
     function mapReservation(apiRes: any): Booking {
         console.log("Mapping reservation", apiRes.booking_id)
-        const formatDate = (iso: string) =>
-            iso ? new Date(iso).toLocaleDateString('fr-FR') : '';
+        // const formatDate = (iso: string) =>
+        //     iso ? new Date(iso).toLocaleDateString('fr-FR') : '';
 
         return {
             booking_id: apiRes.booking_id,
