@@ -1,0 +1,88 @@
+name: seo-lighthouse
+
+on:
+  pull_request:
+  push:
+    branches: [main, feature/seo-lighthouse]
+
+jobs:
+  seo:
+    name: SEO (Lighthouse CI)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Next.js
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+          # 👉 fournis ici tes variables de build "NEXT_PUBLIC_*"
+          NEXT_PUBLIC_BACKEND_DEV_API_URL: ${{ secrets.NEXT_PUBLIC_BACKEND_DEV_API_URL }}
+        run: npm run build
+
+      # Chrome managé pour la CI (pas besoin d'installer Playwright/Chromium)
+      - name: Setup Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
+      # On génère une conf LHCI spécifique CI (sans chromePath)
+      - name: Generate CI Lighthouse config
+        run: |
+          cat > lighthouserc.ci.json <<'EOF'
+          {
+            "ci": {
+              "collect": {
+                "startServerCommand": "next start -p 3000",
+                "url": [
+                  "http://localhost:3000/",
+                  "http://localhost:3000/admin/login"
+                ],
+                "numberOfRuns": 2,
+                "settings": { "preset": "desktop" }
+              },
+              "assert": {
+                "assertions": {
+                  "categories:seo": ["error", { "minScore": 0.90 }],
+                  "meta-description": "error",
+                  "document-title": "error",
+                  "html-has-lang": "error",
+                  "valid-lang": "error",
+                  "hreflang": "warn",
+                  "canonical": "warn",
+                  "link-text": "warn"
+                }
+              },
+              "upload": { "target": "filesystem", "outputDir": ".lighthouse" }
+            }
+          }
+          EOF
+
+      - name: Run Lighthouse CI (SEO)
+        env:
+          # 👉 on force LHCI à utiliser le Chrome installé par l'action
+          LHCI_CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npx lhci autorun --config=lighthouserc.ci.json
+
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: .lighthouse
+
+      - name: PR Summary
+        if: always()
+        run: |
+          echo "## SEO Lighthouse Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Rapport archivé dans l'artefact **lighthouse-report**" >> $GITHUB_STEP_SUMMARY

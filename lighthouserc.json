@@ -1,0 +1,37 @@
+{
+    "ci": {
+        "collect": {
+            "startServerCommand": "next start -p 3000",
+            "url": [
+                "http://localhost:3000/",
+                "http://localhost:3000/admin/login"
+            ],
+            "numberOfRuns": 2,
+            "chromePath": "/Users/leootshudi/Library/Caches/ms-playwright/chromium-1193/chrome-mac/Chromium.app/Contents/MacOS/Chromium",
+            "settings": {
+                "preset": "desktop"
+            }
+        },
+        "assert": {
+            "assertions": {
+                "categories:seo": [
+                    "error",
+                    {
+                        "minScore": 0.90
+                    }
+                ],
+                "meta-description": "error",
+                "document-title": "error",
+                "html-has-lang": "error",
+                "valid-lang": "error",
+                "hreflang": "warn",
+                "canonical": "warn",
+                "link-text": "warn"
+            }
+        },
+        "upload": {
+            "target": "filesystem",
+            "outputDir": ".lighthouse"
+        }
+    }
+}
