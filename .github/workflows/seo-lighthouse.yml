@@ -1,0 +1,111 @@
+name: seo-lighthouse
+
+on:
+  push:
+    branches: [main, feature/seo-lighthouse]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  seo:
+    name: SEO (Lighthouse CI)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Next.js
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_BACKEND_DEV_API_URL: ${{ secrets.NEXT_PUBLIC_BACKEND_DEV_API_URL }}
+        run: npm run build
+
+      - name: Setup Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Generate CI Lighthouse config
+        run: |
+          cat > lighthouserc.ci.json <<'EOF'
+          {
+            "ci": {
+              "collect": {
+                "startServerCommand": "next start -p 3000",
+                "url": [
+                  "http://localhost:3000/"
+                ],
+                "numberOfRuns": 2,
+                "settings": { "preset": "desktop" }
+              },
+              "assert": {
+                "assertions": {
+                  "categories:seo": ["error", { "minScore": 0.90 }],
+                  "meta-description": "error",
+                  "document-title": "error",
+                  "html-has-lang": "error",
+                  "valid-lang": "error",
+                  "hreflang": "warn",
+                  "canonical": "warn",
+                  "link-text": "warn"
+                }
+              },
+              "upload": { "target": "filesystem", "outputDir": ".lighthouse" }
+            }
+          }
+          EOF
+
+      # ⬇️ On ne casse pas le job même si SEO < 0.90, pour pouvoir uploader les rapports
+      - name: Run Lighthouse CI (SEO)
+        continue-on-error: true
+        env:
+          LHCI_CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          npx lhci autorun --config=lighthouserc.ci.json \
+            --upload.target=filesystem --upload.outputDir=.lighthouse
+
+      - name: Show generated files (debug)
+        if: always()
+        run: |
+          echo "== ROOT =="
+          ls -la
+          echo "== .lighthouse =="
+          ls -la .lighthouse || true
+          echo "== .lighthouseci =="
+          ls -la .lighthouseci || true
+
+      # ⬇️ Si LHCI a écrit dans .lighthouseci/, on le copie dans .lighthouse/ pour l’artefact
+      - name: Normalize report folder
+        if: always()
+        run: |
+          if [ ! -d ".lighthouse" ] && [ -d ".lighthouseci" ]; then
+            mkdir -p .lighthouse
+            cp -r .lighthouseci/* .lighthouse/ || true
+          fi
+
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: |
+            .lighthouse/**
+            .lighthouseci/**
+          include-hidden-files: true
+
+      - name: PR Summary
+        if: always()
+        run: |
+          echo "## SEO Lighthouse Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Rapport archivé dans l'artefact **lighthouse-report**" >> $GITHUB_STEP_SUMMARY

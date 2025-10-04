@@ -75,14 +75,6 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
     const router = useRouter();
     const pathname = usePathname();
 
-    // console.log("reservation", reservation)
-
-    const goToInventory = (type: 'arrivee' | 'depart') => {
-        router.push(
-            `/admin/inventory-form?reservation_id=${currentBooking?.booking_id}&rental_id=${currentBooking?.campsite_id}&type=${type}`
-        );
-    };
-
     // Back button in admin, not in client
     const showBackButton = mode === "admin";
 
