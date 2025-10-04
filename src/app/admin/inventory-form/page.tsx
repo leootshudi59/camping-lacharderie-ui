@@ -22,7 +22,6 @@
 //           console.log('Envoi inventaire pour réservation', reservationId);
 //           console.table(items);
 //         }}
-//         i
 //       />
 //     </div>
 //   );
