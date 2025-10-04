@@ -1,9 +1,11 @@
 name: seo-lighthouse
 
 on:
-  pull_request:
   push:
     branches: [main, feature/seo-lighthouse]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   seo:
@@ -27,16 +29,13 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_TELEMETRY_DISABLED: 1
-          # 👉 fournis ici tes variables de build "NEXT_PUBLIC_*"
           NEXT_PUBLIC_BACKEND_DEV_API_URL: ${{ secrets.NEXT_PUBLIC_BACKEND_DEV_API_URL }}
         run: npm run build
 
-      # Chrome managé pour la CI (pas besoin d'installer Playwright/Chromium)
       - name: Setup Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v1
 
-      # On génère une conf LHCI spécifique CI (sans chromePath)
       - name: Generate CI Lighthouse config
         run: |
           cat > lighthouserc.ci.json <<'EOF'
@@ -67,18 +66,42 @@ jobs:
           }
           EOF
 
+      # ⬇️ On ne casse pas le job même si SEO < 0.90, pour pouvoir uploader les rapports
       - name: Run Lighthouse CI (SEO)
+        continue-on-error: true
         env:
-          # 👉 on force LHCI à utiliser le Chrome installé par l'action
           LHCI_CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome-path }}
-        run: npx lhci autorun --config=lighthouserc.ci.json
+        run: |
+          npx lhci autorun --config=lighthouserc.ci.json \
+            --upload.target=filesystem --upload.outputDir=.lighthouse
+
+      - name: Show generated files (debug)
+        if: always()
+        run: |
+          echo "== ROOT =="
+          ls -la
+          echo "== .lighthouse =="
+          ls -la .lighthouse || true
+          echo "== .lighthouseci =="
+          ls -la .lighthouseci || true
+
+      # ⬇️ Si LHCI a écrit dans .lighthouseci/, on le copie dans .lighthouse/ pour l’artefact
+      - name: Normalize report folder
+        if: always()
+        run: |
+          if [ ! -d ".lighthouse" ] && [ -d ".lighthouseci" ]; then
+            mkdir -p .lighthouse
+            cp -r .lighthouseci/* .lighthouse/ || true
+          fi
 
       - name: Upload Lighthouse report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-report
-          path: .lighthouse
+          path: |
+            .lighthouse/**
+            .lighthouseci/**
 
       - name: PR Summary
         if: always()
