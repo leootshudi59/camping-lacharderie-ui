@@ -102,6 +102,7 @@ jobs:
           path: |
             .lighthouse/**
             .lighthouseci/**
+          include-hidden-files: true
 
       - name: PR Summary
         if: always()
