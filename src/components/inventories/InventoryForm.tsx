@@ -1,43 +1,67 @@
 'use client';
 
-import { useState } from 'react';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, PlusCircle, Trash2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
-type InventoryItem = {
+/* ─────────────── Types ─────────────── */
+export type InventoryItem = {
   id: string;
   name: string;
   quantity: number;
   condition: string;
 };
 
-type InventoryFormProps = {
-  type: 'arrivée' | 'départ';
+export type InventoryFormData = {
+  type: 'arrivee' | 'depart';
+  items: InventoryItem[];
+};
+
+/* ─────────────── Props ─────────────── */
+type InventoryFormModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit?: (data: InventoryFormData) => void;
   initialItems?: InventoryItem[];
-  onSubmit?: (items: InventoryItem[]) => void;
+  type: 'arrivee' | 'depart';
 };
 
 const CONDITIONS = ['bon', 'abîmé', 'cassé', 'manquant'];
 
-export default function InventoryForm({
-  type,
-  initialItems = [],
+/* ─────────────── Component ─────────────── */
+export default function InventoryFormModal({
+  isOpen,
+  onClose,
   onSubmit,
-}: InventoryFormProps) {
-  const [items, setItems] = useState<InventoryItem[]>(
-    initialItems.length
-      ? initialItems
-      : [
-          { id: '1', name: 'Casserole', quantity: 2, condition: 'bon' },
-          { id: '2', name: 'Assiette', quantity: 4, condition: 'bon' },
-          { id: '3', name: 'Chaise', quantity: 4, condition: 'bon' },
-        ]
-  );
+  initialItems,
+  type,
+}: InventoryFormModalProps) {
+  const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState<string | null>(null);
 
-  // Ajout d'un nouvel item
+  // accessibilité
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = 'inventory-dialog-title';
+
+  /* reset à chaque ouverture */
+  useEffect(() => {
+    if (isOpen) {
+      if (initialItems && initialItems.length > 0) {
+        setItems(initialItems);
+      } else {
+        setItems([]);
+      }
+    }
+    // 👇 ici, on écoute uniquement quand la modale s'ouvre ou les items init changent
+  }, [isOpen, initialItems]);
+
+  if (!isOpen) return null;
+
+  /* ─────────────── CRUD des items ─────────────── */
   const addItem = () => {
-    setItems([
-      ...items,
+    setItems(prev => [
+      ...prev,
       {
         id: (Math.random() + '').slice(2),
         name: '',
@@ -47,106 +71,145 @@ export default function InventoryForm({
     ]);
   };
 
-  // Suppression d'un item
   const removeItem = (id: string) => {
     setItems(items.filter((item) => item.id !== id));
   };
 
-  // Modification d'un champ d'item
   const updateItem = (id: string, field: keyof InventoryItem, value: any) => {
-    setItems(
-      items.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
+    setItems(items.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  /* ─────────────── Submit ─────────────── */
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
 
-    // Appel backend à intégrer ici, pour l’instant on mock
-    if (onSubmit) {
-      onSubmit(items);
-    } else {
-      alert('Inventaire envoyé !');
+    try {
+      const data: InventoryFormData = {
+        type,
+        items,
+      };
+
+      onSubmit?.(data);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la validation');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white rounded-xl shadow p-6 space-y-6 max-w-2xl mx-auto"
+  /* ─────────────── Rendu ─────────────── */
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      ref={dialogRef}
     >
-      <h2 className="text-xl font-bold text-green-700 mb-2 text-center">
-        Inventaire de {type}
-      </h2>
-      <div className="flex flex-col gap-3">
-        {items.map((item, idx) => (
-          <div
-            key={item.id}
-            className="flex flex-col sm:flex-row gap-2 items-center border-b border-gray-100 pb-3"
+      <div className="bg-white rounded-2xl w-full max-w-2xl p-6 sm:p-8 shadow-xl relative animate-in fade-in zoom-in-90 border border-gray-200">
+
+        {/* Fermer */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 transition"
+          aria-label="Fermer"
+        >
+          <X className="w-5 h-5 text-gray-500" aria-hidden="true" focusable="false" />
+        </button>
+
+        {/* Titre */}
+        <h2 id={titleId} className="text-2xl font-bold text-green-700 mb-6 text-center">
+          Inventaire de {type}
+        </h2>
+
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">
+              {error}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="flex flex-col sm:flex-row gap-2 items-center border-b border-gray-100 pb-3"
+              >
+                <input
+                  type="text"
+                  placeholder="Nom de l’objet"
+                  value={item.name}
+                  required
+                  className="flex-1 px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                />
+                <input
+                  type="number"
+                  min={0}
+                  value={item.quantity}
+                  required
+                  className="w-20 px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  onChange={(e) =>
+                    updateItem(item.id, 'quantity', parseInt(e.target.value) || 0)
+                  }
+                />
+                <select
+                  value={item.condition}
+                  onChange={(e) => updateItem(item.id, 'condition', e.target.value)}
+                  className="w-28 px-2 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  {CONDITIONS.map((cond) => (
+                    <option key={cond} value={cond}>
+                      {cond.charAt(0).toUpperCase() + cond.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.id)}
+                  className="ml-1 p-1 rounded hover:bg-red-100 transition"
+                  aria-label="Supprimer l’item"
+                  tabIndex={-1}
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Ajouter un objet */}
+          <button
+            type="button"
+            onClick={addItem}
+            className="flex items-center gap-2 text-green-600 font-medium px-4 py-2 rounded hover:bg-green-50 transition w-full sm:w-auto justify-center"
           >
-            <input
-              type="text"
-              placeholder="Nom de l’objet"
-              value={item.name}
-              required
-              className="flex-1 px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              onChange={(e) =>
-                updateItem(item.id, 'name', e.target.value)
-              }
-            />
-            <input
-              type="number"
-              min={0}
-              value={item.quantity}
-              required
-              className="w-20 px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              onChange={(e) =>
-                updateItem(item.id, 'quantity', parseInt(e.target.value) || 0)
-              }
-            />
-            <select
-              value={item.condition}
-              onChange={(e) =>
-                updateItem(item.id, 'condition', e.target.value)
-              }
-              className="w-28 px-2 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              {CONDITIONS.map((cond) => (
-                <option key={cond} value={cond}>
-                  {cond.charAt(0).toUpperCase() + cond.slice(1)}
-                </option>
-              ))}
-            </select>
+            <PlusCircle className="w-5 h-5" /> Ajouter un objet
+          </button>
+
+          {/* Boutons bas */}
+          <div className="pt-4 flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => removeItem(item.id)}
-              className="ml-1 p-1 rounded hover:bg-red-100 transition"
-              aria-label="Supprimer l’item"
-              tabIndex={-1}
+              onClick={onClose}
+              className="px-5 py-2 rounded-lg border text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200"
             >
-              <Trash2 className="w-4 h-4 text-red-500" />
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-5 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+            >
+              {loading ? 'Envoi…' : 'Valider l’inventaire'}
             </button>
           </div>
-        ))}
+        </form>
       </div>
-      <button
-        type="button"
-        onClick={addItem}
-        className="flex items-center gap-2 text-green-600 font-medium px-4 py-2 rounded hover:bg-green-50 transition w-full sm:w-auto justify-center"
-      >
-        <PlusCircle className="w-5 h-5" /> Ajouter un objet
-      </button>
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
-      >
-        {loading ? 'Envoi…' : 'Valider l\'inventaire'}
-      </button>
-    </form>
+    </div>,
+    document.body
   );
 }
