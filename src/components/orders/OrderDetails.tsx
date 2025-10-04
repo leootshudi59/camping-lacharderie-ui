@@ -52,7 +52,7 @@ export default function OrderDetails({ order, onClose }: Props) {
           {order.reservation_id && (
             <div className="mt-1">
               <a
-                href={`/admin/reservations/${order.reservation_id}`}
+                href={`/admin/bookings/${order.reservation_id}`}
                 className="text-green-600 text-xs font-semibold hover:underline"
               >
                 Voir la réservation

@@ -280,7 +280,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                 {showBackButton && (
                     <div className="block sm:hidden mb-2">
                         <button
-                            onClick={() => router.push('/admin/reservations')}
+                            onClick={() => router.push('/admin/bookings')}
                             className="flex items-center text-green-600 hover:text-green-800 text-sm font-medium transition"
                         >
                             <ArrowLeft className="w-4 h-4 mr-1" />
