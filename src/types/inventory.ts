@@ -12,3 +12,10 @@ export type InventorySummary = {
     comment?: string | null;
     items: InventoryItemUI[];
 };
+
+export type InventoryWithBooking = InventorySummary & {
+    booking_id: string;
+    booking_res_name: string;
+    campsite_id: string;
+    campsiteName: string;
+};
