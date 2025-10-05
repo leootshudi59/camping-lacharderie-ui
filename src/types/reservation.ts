@@ -1,11 +1,11 @@
-export type Reservation = {
-    id: string;
+export type Booking = {
+    booking_id: string;
     resName: string;
     campsite_id: string;
-    rentalName: string;
+    campsiteName: string;
+    email?: string;
+    phone?: string;
     startDate: string;
     endDate: string;
-    email: string;
-    phone: string;
     lastInventoryId?: string;
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, ChangeEvent } from 'react';
+import { useEffect, useState, ChangeEvent, useRef } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
@@ -45,6 +45,10 @@ export default function BookingForm({
     initialData || defaultData
   );
 
+  // refs for accessibility (RGAA)
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = 'booking-dialog-title';
+
   /* reset quand on ouvre / change de réservation */
   useEffect(() => {
     if (initialData) setFormData(initialData);
@@ -78,7 +82,7 @@ export default function BookingForm({
           className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 transition"
           aria-label="Fermer"
         >
-          <X className="w-5 h-5 text-gray-500" />
+          <X className="w-5 h-5 text-gray-500" aria-hidden="true" focusable="false" />
         </button>
 
         {/* Titre */}

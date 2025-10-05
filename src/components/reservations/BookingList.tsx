@@ -6,11 +6,12 @@ import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-reac
 import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
 import BookingForm, { BookingFormData } from './BookingForm';
+import { useApp } from '@/context/AppContext';
 
 type Booking = {
   booking_id: string;
-  res_name: string;
-  campsite_name: string;
+  resName: string;
+  campsiteName: string;
   startDate: string; // format YYYY-MM-DD
   endDate: string;
   email: string;
@@ -34,10 +35,11 @@ function isDateInRange(
 
 export default function BookingList() {
   const { token } = useAuth();
+  const { campsites, setCampsites, reservations, setReservations} = useApp();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [reservations, setReservations] = useState<Booking[]>([]);
-  const [campsites, setCampsites] = useState<{ campsite_id: string; name: string; type?: string }[]>([]);
+  // const [reservations, setReservations] = useState<Booking[]>([]);
+  // const [campsites, setCampsites] = useState<{ campsite_id: string; name: string; type?: string }[]>([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
 
   const [search, setSearch] = useState('');
@@ -107,8 +109,8 @@ export default function BookingList() {
   
     return {
       booking_id: apiRes.booking_id,
-      res_name: apiRes.res_name,
-      campsite_name: apiRes.campsite_name,
+      resName: apiRes.res_name,
+      campsiteName: apiRes.campsite_name,
       startDate: formatDate(apiRes.start_date),
       endDate: formatDate(apiRes.end_date),
       email: apiRes.email || 'non renseigné',
@@ -127,8 +129,8 @@ export default function BookingList() {
 
   const filtered = reservations.filter((res) => {
     const matchText =
-      res.res_name.toLowerCase().includes(search.toLowerCase()) ||
-      res.campsite_name.toLowerCase().includes(search.toLowerCase());
+      res.resName.toLowerCase().includes(search.toLowerCase()) ||
+      res.campsiteName.toLowerCase().includes(search.toLowerCase());
 
     const matchDate = isDateInRange(res, startFilter, endFilter);
 
@@ -182,21 +184,31 @@ export default function BookingList() {
           <button
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow hover:bg-green-700 transition"
             onClick={() => setFiltersOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={filtersOpen}
+            aria-controls="filters-modal"
           >
-            <SlidersHorizontal className="w-5 h-5" />
+            <SlidersHorizontal className="w-5 h-5" aria-hidden="true" focusable="false" />
             Filtres
         </button>
         {/* Drawer/Modal de filtres */}
         {filtersOpen && (
-          <div className="fixed inset-0 z-40 flex justify-center items-end bg-black/40">
+          <div 
+            id="filters-modal"
+            className="fixed inset-0 z-40 flex justify-center items-end bg-black/40"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="filters-title"    
+          >
             <div className="bg-white w-full rounded-t-2xl p-6 max-w-md shadow-lg animate-slideup">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold">Filtres</span>
+                <span className="text-lg font-semibold" id="filters-title">Filtres</span>
                 <button
                   className="text-gray-400 hover:text-gray-700"
                   onClick={() => setFiltersOpen(false)}
+                  aria-label="Fermer les filtres"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6" aria-hidden="true" focusable="false"/>
                 </button>
               </div>
               <div className="space-y-3">
@@ -286,21 +298,22 @@ export default function BookingList() {
           filtered.map((res) => (
             <Link
               key={res.booking_id}
-              href={`/admin/reservations/${res.booking_id}`}
+              href={`/admin/bookings/${res.booking_id}`}
               className="bg-white rounded-xl shadow p-4 border border-gray-100 hover:shadow-md transition flex flex-col"
+              aria-label={`Voir la fiche de la réservation ${res.resName}`}
             >
-              <h3 className="text-lg font-semibold text-green-700 mb-1">{res.res_name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{res.campsite_name}</p>
+              <h3 className="text-lg font-semibold text-green-700 mb-1">{res.resName}</h3>
+              <p className="text-sm text-gray-600 mb-2">{res.campsiteName}</p>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-1">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4" aria-hidden="true" focusable="false" />
                 {res.startDate} → {res.endDate}
               </div>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-1">
-                <Mail className="w-4 h-4" />
+                <Mail className="w-4 h-4" aria-hidden="true" focusable="false" />
                 {res.email}
               </div>
               <div className="flex items-center text-sm text-gray-500 gap-2 mb-3">
-                <Phone className="w-4 h-4" />
+                <Phone className="w-4 h-4" aria-hidden="true" focusable="false" />
                 {res.phone}
               </div>
               <div className="mt-auto px-4 py-2 rounded-md text-sm bg-green-600 text-white text-center">

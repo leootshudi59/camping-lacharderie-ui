@@ -45,7 +45,7 @@ export default function RentalList() {
     useEffect(() => {
         const fetchRentals = async () => {
             try {
-                const res = await fetch('/api/rentals', {
+                const res = await fetch('/api/campsites', {
                     headers: { Authorization: `Bearer ${getToken()}` },
                 });
                 const data = await res.json();

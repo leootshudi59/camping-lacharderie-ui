@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ClipboardCheck, ShoppingCart, AlertTriangle, CalendarDays, Info, LogOut } from 'lucide-react';
+import { Home, ClipboardCheck, ShoppingCart, AlertTriangle, CalendarDays, Info, LogOut, Calendar } from 'lucide-react';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -12,6 +12,7 @@ interface SidebarProps {
 const navItems = [
   { name: 'Dashboard', icon: Home, href: '/admin' },
   { name: 'Locatifs', icon: Home, href: '/admin/campsites' },
+  { name: 'Réservations', icon: Calendar, href: '/admin/bookings' },
   { name: 'Inventaires', icon: ClipboardCheck, href: '/admin/inventories' },
   { name: 'Commandes', icon: ShoppingCart, href: '/admin/orders' },
   { name: 'Problèmes', icon: AlertTriangle, href: '/admin/issues' },
