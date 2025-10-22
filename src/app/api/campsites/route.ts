@@ -2,7 +2,8 @@
 // POST : crée un locatif
 import { NextRequest, NextResponse } from 'next/server';
 
-const backendURL = process.env.NEXT_PUBLIC_BACKEND_DEV_API_URL ?? 'http://localhost:8000';
+const backendURL = process.env.NEXT_PUBLIC_BACKEND_PROD_API_URL ?? 'http://localhost:8000';
+// const backendURL = process.env.NEXT_PUBLIC_BACKEND_DEV_API_URL ?? 'http://localhost:8000';
 
 export async function GET(req: NextRequest) {
   try {

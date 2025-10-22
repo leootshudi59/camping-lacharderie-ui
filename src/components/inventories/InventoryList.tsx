@@ -102,9 +102,10 @@ export default function InventoryList() {
                     console.log("it", it);
                     const inv: InventorySummary | null = await fetchInventoryById(it.inventory_id);
 
+                    const res_name = it.booking?.res_name ? it.booking.res_name : "";
                     return {
                         booking_id: it.booking_id,
-                        booking_res_name: it.booking.res_name,
+                        booking_res_name: res_name,
                         campsite_id: it.campsite_id,
                         campsiteName: it.campsite.name,
                         id: it.inventory_id,
