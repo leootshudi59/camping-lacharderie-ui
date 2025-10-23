@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { mockEvents } from '@/mocks/mockEvents';
 import { Event } from '@/types/event';
 import EventForm from './EventForm';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Loader from '@/components/ui/Loader';
+import { useRouter } from 'next/navigation';
 
 
 export default function EventList() {
+  const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,30 +23,36 @@ export default function EventList() {
     }
   };
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch('/api/events', {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-        const data = await res.json();
-        console.log("events", data)
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
-  }, [])
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch('/api/events', {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      console.log("events", data);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setEvents(mockEvents);   // on « reçoit » les données
-      setLoading(false);       // on coupe le spinner
-    }, 600);                   // 0,6 s de latence simulée
-    return () => clearTimeout(timer);
-  }, []);
+      const eventList: Event[] = data.map((e: any) => ({
+        event_id: e.event_id,
+        title: e.title,
+        description: e.description,
+        start_date: new Date(e.start_datetime),
+        end_date: new Date(e.end_datetime),
+        location: e.location,
+        image: e.image,
+        created_by: e.created_by,
+        language: e.language,
+      }))
+      console.log("eventList", eventList)
+      setEvents(eventList);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchEvents(); }, [])
+
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
 
@@ -59,16 +66,33 @@ export default function EventList() {
     setModalOpen(true);
   };
 
-  const handleSubmit = (data: Event) => {
-    if (data.event_id && events.find(e => e.event_id === data.event_id)) {
-      // Edition
-      setEvents(prev => prev.map(e => (e.event_id === data.event_id ? { ...e, ...data } : e)));
-    } else {
-      // Création
-      setEvents(prev => [
-        ...prev,
-        { ...data, event_id: data.event_id || Math.random().toString(36).slice(2, 9) },
-      ]);
+  const handleSubmit = async (data: Event) => {
+    try {
+      console.log("handleSubmit");
+      const formattedData: any = {
+        title: data.title,
+        description: data.description,
+        start_datetime: new Date(data.start_date).toISOString(),
+        end_datetime: new Date(data.end_date).toISOString(),
+        location: data.location,
+        language: data.language,
+        created_by: data.created_by,
+        image: data.image,
+      }
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify(formattedData),
+      });
+      const created = await res.json();
+      console.log("created", created)
+      if (!res.ok) throw new Error(created.message ?? 'Erreur');
+      
+      await fetchEvents();
+
+      router.refresh();
+    } catch (error) {
+      console.log(error);
     }
   };
 
