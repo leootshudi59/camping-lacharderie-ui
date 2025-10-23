@@ -12,6 +12,33 @@ import Loader from '@/components/ui/Loader';
 export default function EventList() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const getToken = () => {
+    try {
+      return localStorage.getItem('jwt') ?? '';
+    } catch {
+      return '';
+    }
+  };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch('/api/events', {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        const data = await res.json();
+        console.log("events", data)
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [])
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setEvents(mockEvents);   // on « reçoit » les données

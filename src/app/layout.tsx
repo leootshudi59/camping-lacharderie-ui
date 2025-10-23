@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://camping-lacharderie-ui.vercel.app/"),
   title: {
     default: "Camping La Charderie",
-    template: "%s – Camping La Charderie",
+    template: "%s - Camping La Charderie",
   },
   description: "Camping La Charderie : réservez vos emplacements et gérez vos séjours facilement.",
   alternates: { canonical: "/" },
