@@ -6,6 +6,7 @@ import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
 import InventoryForm, { InventoryFormData } from './InventoryForm';
 import { InventoryItemUI, InventorySummary, InventoryWithBooking } from '@/types/inventory';
+import InventoryFormModal from './InventoryForm';
 
 type ApiInventoryItem = {
     inventoryItemId: string;
@@ -366,14 +367,17 @@ export default function InventoryList() {
             </div>
 
             {/* Modal Formulaire (à réactiver quand prêt) */}
-            {/*
-                <InventoryForm
+                <InventoryFormModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
-                onSubmit={...}
-                initialData={selectedInventory || undefined}
+                onSubmit={(data) => {
+                    console.log(data);
+                }}
+                initialItems={undefined}
+                type="arrivee"
+                // initialData={selectedInventory || undefined}
                 />
-            */}
+           
         </div>
     );
 }
