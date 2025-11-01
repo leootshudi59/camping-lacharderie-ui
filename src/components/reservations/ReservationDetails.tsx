@@ -25,45 +25,11 @@ type ReservationDetailsProps = {
     //     lastInventoryId?: string;
     // };
     booking_id: string;
-    mode?: 'admin' | 'client';
+    mode?: 'admin' | 'client' | 'clientGuest';
 };
 
-const mockInventories = [
-    {
-        id: '1',
-        reservationId: '1',
-        type: 0, // entrée
-        createdAt: '2025-07-10',
-        comment: 'Inventaire d\'arrivée : tout est en bon état.',
-        items: [
-            { inventoryItemId: '1', name: 'Chaises', quantity: 4, condition: 'Une des chaises a un pied qui boite' },
-            { inventoryItemId: '2', name: 'Table', quantity: 1, condition: 'Neuf' },
-        ],
-    },
-    {
-        id: '2',
-        reservationId: '2',
-        type: 0, // entrée
-        createdAt: '2025-07-19',
-        comment: 'Inventaire d\'arrivée : tout est en bon état.',
-        items: [
-            { inventoryItemId: '3', name: 'Tente', quantity: 1, condition: 'Usé' },
-        ],
-    },
-    {
-        id: '3',
-        reservationId: '2',
-        type: 1, // sortie
-        createdAt: '2025-07-19',
-        comment: 'Inventaire de départ : meubles rendus sans dommage.',
-        items: [
-            { inventoryItemId: '3', name: 'Tente', quantity: 1, condition: 'Usé' },
-        ],
-    },
-];
-
 export default function ReservationDetails({ booking_id, mode }: ReservationDetailsProps) {
-    const { token } = useAuth();
+    const { token, guestToken } = useAuth();
     const { mapReservation } = useApp()
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -127,42 +93,81 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
         }
     }
 
-    useEffect(() => {
-        const fetchBookingById = async () => {
-            try {
-                if (!token || !booking_id) return;
-                console.log("token", token);
-                setLoading(true);
+    const fetchBookingById = async () => {
+        try {
+            console.log('hello')
+            if (!token || !booking_id) return;
+            console.log("token", token);
+            setLoading(true);
 
-                const res = await fetch(`/api/bookings/${booking_id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+            const res = await fetch(`/api/bookings/${booking_id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-                if (res.status === 404) {
-                    setCurrentBooking(null);         // affichera “introuvable”
-                    return;
-                }
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-                const data = await res.json();
-                console.log("data", data);
-                const mappedBooking: Booking = mapReservation(data);
-                console.log("Mapped data", mappedBooking)
-                setCurrentBooking(mappedBooking);
-
-                if (mappedBooking.lastInventoryId) {
-                    await fetchInventoryById(mappedBooking.lastInventoryId);
-                } else {
-                    setLastInventory(null);
-                }
-            } catch (e: any) {
-                setError(e.message);
-            } finally {
-                setLoading(false);
+            if (res.status === 404) {
+                setCurrentBooking(null);         // affichera “introuvable”
+                return;
             }
-        }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
+            const data = await res.json();
+            console.log("data", data);
+            const mappedBooking: Booking = mapReservation(data);
+            console.log("Mapped data", mappedBooking)
+            setCurrentBooking(mappedBooking);
+
+            if (mappedBooking.lastInventoryId) {
+                await fetchInventoryById(mappedBooking.lastInventoryId);
+            } else {
+                setLastInventory(null);
+            }
+        } catch (e: any) {
+            console.log('error ouai ouai')
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+    const fetchGuestBookingById = async () => {
+        console.log('fetchGuestBookingById')
+
+        try {
+            if (!guestToken || !booking_id) return;
+            console.log("token", guestToken);
+            setLoading(true);
+
+            const res = await fetch(`/api/guest/bookings/${booking_id}`, {
+                headers: { Authorization: `Bearer ${guestToken}` },
+            });
+
+            if (res.status === 404) {
+                setCurrentBooking(null);         // affichera “introuvable”
+                return;
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const data = await res.json();
+            console.log("data", data);
+            const mappedBooking: Booking = mapReservation(data);
+            console.log("Mapped data", mappedBooking)
+            setCurrentBooking(mappedBooking);
+
+            if (mappedBooking.lastInventoryId) {
+                await fetchInventoryById(mappedBooking.lastInventoryId);
+            } else {
+                setLastInventory(null);
+            }
+        } catch (e: any) {
+            console.log('error ouai ouai')
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
         if (mode === 'admin') fetchBookingById();
+        if (mode === 'clientGuest') fetchGuestBookingById();
     }, [token, booking_id, mapReservation]);
 
 
