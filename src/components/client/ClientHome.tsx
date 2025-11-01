@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 
 type ReservationCard = {
   name: string;
+  bookingId: string;
   bookingNumber: string;
   rentalName: string;
   endDate: string; // affichage FR
@@ -14,6 +15,7 @@ type ReservationCard = {
 
 const mapToCard = (b: any): ReservationCard => ({
   name: b?.res_name ?? b?.resName ?? '',
+  bookingId: b?.booking_id ?? b?.bookingId ?? '',
   bookingNumber: b?.booking_number ?? b?.bookingNumber ?? '',
   rentalName: b?.campsite_name ?? b?.campsiteName ?? '',
   endDate: b?.end_date
@@ -95,7 +97,7 @@ export default function ClientHome() {
               </div>
             </div>
             <Link
-              href={`/bookings/${card.bookingNumber}`} // tu gèreras le détail derrière
+              href={`/bookings/${card.bookingId}`} // tu gèreras le détail derrière
               className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition"
             >
               Voir ma réservation
