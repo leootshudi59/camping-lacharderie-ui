@@ -3,24 +3,61 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays, ShoppingCart, AlertTriangle, MapPinned } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
-type ReservationUser = {
+type ReservationCard = {
   name: string;
-  reservationNumber: string;
+  bookingNumber: string;
   rentalName: string;
-  endDate: string;
+  endDate: string; // affichage FR
 };
 
+const mapToCard = (b: any): ReservationCard => ({
+  name: b?.res_name ?? b?.resName ?? '',
+  bookingNumber: b?.booking_number ?? b?.bookingNumber ?? '',
+  rentalName: b?.campsite_name ?? b?.campsiteName ?? '',
+  endDate: b?.end_date
+    ? new Date(b.end_date).toLocaleDateString('fr-FR')
+    : (b?.endDate ?? ''),
+});
+
 export default function ClientHome() {
-  const [user, setUser] = useState<ReservationUser | null>(null);
+  const { guestToken, guestBooking, logoutGuest } = useAuth();
+  const [card, setCard] = useState<ReservationCard | null>(
+    guestBooking ? mapToCard(guestBooking) : null
+  );
 
   useEffect(() => {
-    // Lecture depuis le localStorage
-    try {
-      const data = localStorage.getItem('reservationUser');
-      if (data) setUser(JSON.parse(data));
-    } catch {}
-  }, []);
+    (async () => {
+      if (!guestToken) return;
+
+      // 1) Si on a déjà le booking en mémoire (AuthContext) → on mappe
+      if (guestBooking) {
+        console.log("found guest booking in localStorage", guestBooking);
+        setCard(mapToCard(guestBooking));
+        return;
+      }
+
+      // 2) Fallback (rare) : relecture locale + refetch API
+      try {
+        const raw = localStorage.getItem('guest_booking');
+        const gb = raw ? JSON.parse(raw) : null;
+        const id = gb?.booking_id;
+        if (!id) return;
+
+        const r = await fetch(`/api/guest/bookings/${id}`, {
+          headers: { Authorization: `Bearer ${guestToken}` },
+        });
+        if (r.status === 401) { logoutGuest(); return; }
+        const j = await r.json();
+        console.log("guest booking from API", j);
+        if (!r.ok) throw new Error(j?.error || 'Erreur');
+        setCard(mapToCard(j));
+      } catch {
+        // no-op (tu peux ajouter un toast ici si tu veux)
+      }
+    })();
+  }, [guestToken, guestBooking, logoutGuest]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -42,23 +79,23 @@ export default function ClientHome() {
       </header>
 
       {/* Résa */}
-      {user && (
+      {card && (
         <section className="w-full max-w-2xl mx-auto mb-8">
           <div className="bg-white rounded-xl shadow p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex-1 space-y-1">
-              <div className="text-gray-800 font-bold text-lg">{user.name}</div>
+              <div className="text-gray-800 font-bold text-lg">{card.name}</div>
               <div className="text-gray-600 text-sm">
-                <span className="font-medium">Nº réservation :</span> {user.reservationNumber}
+                <span className="font-medium">Nº réservation :</span> {card.bookingNumber}
               </div>
               <div className="text-gray-600 text-sm">
-                <span className="font-medium">Emplacement :</span> {user.rentalName}
+                <span className="font-medium">Emplacement :</span> {card.rentalName}
               </div>
               <div className="text-gray-600 text-sm">
-                <span className="font-medium">Fin du séjour :</span> {user.endDate}
+                <span className="font-medium">Fin du séjour :</span> {card.endDate}
               </div>
             </div>
             <Link
-              href={`/reservation`} // ou `/reservation/[id]` si besoin
+              href={`/bookings/${card.bookingNumber}`} // tu gèreras le détail derrière
               className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition"
             >
               Voir ma réservation

@@ -2,31 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
-type Props = {
-  children: React.ReactNode;
-};
+type Props = { children: React.ReactNode };
 
 export default function ClientAuthGuard({ children }: Props) {
   const router = useRouter();
-  const [checked, setChecked] = useState(false);
+  const { guestToken } = useAuth();        // ← on s'appuie sur l'invité
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Vérifie la présence d'un "utilisateur" dans le localStorage
-    if (typeof window !== 'undefined') {
-      const user = localStorage.getItem('reservationUser');
-      if (!user) {
-        router.replace('/login');
-      } else {
-        setChecked(true);
-      }
+    // L’AuthContext restaure en useEffect — on tolère un petit délai
+    const gj = typeof window !== 'undefined' ? localStorage.getItem('guest_jwt') : null;
+
+    if (!guestToken && !gj) {
+      router.replace('/login');            // page avec QuickIdentityForm
+      return;
     }
-  }, [router]);
+    setReady(true);
+  }, [guestToken, router]);
 
-  // Empêche le flash du contenu avant la vérif
-  if (!checked) {
-    return null; // Ou un loader/spinner si tu veux
-  }
-
+  if (!ready) return null;                 // ou un spinner
   return <>{children}</>;
 }
