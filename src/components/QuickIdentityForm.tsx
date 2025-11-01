@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { notifySuccess } from '@/lib/toast';
+import FormField from './ui/FormField';
 
 export default function QuickIdentityForm() {
   const [name, setName] = useState('');
@@ -78,36 +79,27 @@ export default function QuickIdentityForm() {
           Veuillez saisir votre nom <span className="hidden sm:inline">et</span> numéro de réservation pour accéder à vos services.
         </p>
       </div>
-      <div className="space-y-4">
-        <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">
-            Nom de réservation <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={name}
-            required
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Ex : Dupont"
-            autoComplete="off"
-          />
-        </div>
-        <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">
-            Numéro de réservation <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={reservationNumber}
-            required
-            onChange={(e) => setReservationNumber(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Ex : 12345"
-            autoComplete="off"
-          />
-        </div>
-      </div>
+      <FormField
+        label="Nom de réservation"
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+        placeholder="Ex : Dupont"
+        autoComplete="off"
+      />
+
+      <FormField
+        label="Numéro de réservation"
+        type="text"
+        value={reservationNumber}
+        onChange={(e) => setReservationNumber(e.target.value)}
+        required
+        placeholder="Ex : 12345"
+        autoComplete="off"
+      />
+
+
       {error && (
         <div className="text-red-600 text-sm text-center mt-2">{error}</div>
       )}
