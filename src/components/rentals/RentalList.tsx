@@ -82,7 +82,7 @@ export default function RentalList() {
     const handleSubmit = async (rfData: RentalFormData) => {
         try {
             console.log("handleSubmit")
-            const res = await fetch('/api/rentals', {
+            const res = await fetch('/api/campsites', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
                 body: JSON.stringify(rfData),

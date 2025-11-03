@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Event } from '@/types/event';
 import { notifySuccess, notifyError } from '@/lib/toast';
+import { format } from 'date-fns';
 
 export type EventFormData = {
   event_id: string;
@@ -34,6 +35,14 @@ type EventFormProps = {
 export default function EventForm({ isOpen, onClose, onSubmit, initialData }: EventFormProps) {
   const [formData, setFormData] = useState<EventFormData>(initialData || defaultData);
   const [loading, setLoading] = useState(false);
+
+  function toDatetimeLocalValue(d?: Date | string) {
+    if (!d) return '';
+    const date = typeof d === 'string' ? new Date(d) : d;
+    if (Number.isNaN(date.getTime())) return '';
+    // "yyyy-MM-dd'T'HH:mm" pour l'input
+    return format(date, "yyyy-MM-dd'T'HH:mm");
+  }
 
   useEffect(() => {
     if (initialData) setFormData(initialData);

@@ -6,6 +6,7 @@ import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
 import InventoryForm, { InventoryFormData } from './InventoryForm';
 import { InventoryItemUI, InventorySummary, InventoryWithBooking } from '@/types/inventory';
+import InventoryFormModal from './InventoryForm';
 
 type ApiInventoryItem = {
     inventoryItemId: string;
@@ -102,9 +103,10 @@ export default function InventoryList() {
                     console.log("it", it);
                     const inv: InventorySummary | null = await fetchInventoryById(it.inventory_id);
 
+                    const res_name = it.booking?.res_name ? it.booking.res_name : "";
                     return {
                         booking_id: it.booking_id,
-                        booking_res_name: it.booking.res_name,
+                        booking_res_name: res_name,
                         campsite_id: it.campsite_id,
                         campsiteName: it.campsite.name,
                         id: it.inventory_id,
@@ -365,14 +367,17 @@ export default function InventoryList() {
             </div>
 
             {/* Modal Formulaire (à réactiver quand prêt) */}
-            {/*
-                <InventoryForm
+                <InventoryFormModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
-                onSubmit={...}
-                initialData={selectedInventory || undefined}
+                onSubmit={(data) => {
+                    console.log(data);
+                }}
+                initialItems={undefined}
+                type="arrivee"
+                // initialData={selectedInventory || undefined}
                 />
-            */}
+           
         </div>
     );
 }

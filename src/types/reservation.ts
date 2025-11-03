@@ -7,5 +7,6 @@ export type Booking = {
     phone?: string;
     startDate: string;
     endDate: string;
+    booking_number: string | null;
     lastInventoryId?: string;
 };
