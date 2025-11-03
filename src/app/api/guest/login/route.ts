@@ -9,8 +9,7 @@ export async function POST(req: NextRequest) {
             booking_number: rawBody.booking_number,
         };
 
-        // const backendURL = process.env.NEXT_PUBLIC_BACKEND_PROD_API_URL ?? 'http://localhost:8000';
-        const backendURL = process.env.NEXT_PUBLIC_BACKEND_DEV_API_URL ?? 'http://localhost:8000';
+        const backendURL = process.env.NEXT_PUBLIC_BACKEND_PROD_API_URL ?? 'http://localhost:8000';
 
         const backendRes = await fetch(`${backendURL}/api/guest/login`, {
             method: 'POST',
