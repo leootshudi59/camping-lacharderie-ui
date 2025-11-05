@@ -168,7 +168,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
     useEffect(() => {
         if (mode === 'admin') fetchBookingById();
         if (mode === 'clientGuest') fetchGuestBookingById();
-    }, [token, booking_id, mapReservation]);
+    }, [token, guestToken, booking_id, mapReservation]);
 
 
     const openInventoryModal = (type: 'arrivee' | 'depart') => {
