@@ -1,4 +1,3 @@
-// src/app/api/bookings/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 // const backendURL = process.env.NEXT_PUBLIC_BACKEND_PROD_API_URL ?? 'http://localhost:8000';
