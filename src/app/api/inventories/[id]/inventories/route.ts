@@ -12,13 +12,13 @@ export async function GET(req: NextRequest, { params }: Params) {
     console.log("params.id", (await params).id)
     const paramsId = (await params).id;
     const auth = req.headers.get('authorization') ?? '';
-    const r = await fetch(`${backendURL}/api/inventories/${paramsId}`, {
+    const r = await fetch(`${backendURL}/api/inventories/booking/${paramsId}`, {
       headers: { Authorization: auth },
       next: { revalidate: 0 },
     });
 
     // Si backend renvoie 204/texte, évite le crash du .json()
-    const data = await r.json();
+    const data = await r.json().catch(() => (r.status === 204 ? [] : { message: 'No JSON body' }));
     return NextResponse.json(data, { status: r.status });
   } catch (e) {
     return NextResponse.json({ message: 'Proxy error' }, { status: 500 });
