@@ -35,9 +35,13 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
     const [error, setError] = useState('');
     const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
     const [lastInventory, setLastInventory] = useState<InventorySummary | null>(null);
-    const [inventories, setInventories] = useState<InventorySummary[]>([]);
     const [invOpen, setInvOpen] = useState(false);
     const [invType, setInvType] = useState<'arrivee' | 'depart'>('arrivee');
+
+    /* Only for admins */
+    const [inventories, setInventories] = useState<InventorySummary[]>([]);
+    const [editInventoryId, setEditInventoryId] = useState<string | null>(null);
+    const [modalInitialItems, setModalInitialItems] = useState<InventoryFormData['items']>([]);
 
     const router = useRouter();
     const pathname = usePathname();
@@ -230,18 +234,61 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
     }, [token, guestToken, booking_id, mapReservation]);
 
 
-    const openInventoryModal = (type: 'arrivee' | 'depart') => {
+    const openCreateInventory = (type: 'arrivee' | 'depart') => {
+        setEditInventoryId(null);
         setInvType(type);
         setInvOpen(true);
     }
 
-    const handleCreateInventory = async (data: InventoryFormData) => {
+    const openEditInventory = (inv: InventorySummary) => {
+        setEditInventoryId(inv.id);
+        setInvType(inv.type === 0 ? 'arrivee' : 'depart');
+        const preset = (inv.items || []).map(it => ({
+            id: it.inventoryItemId ?? (Math.random() + '').slice(2),
+            name: it.name,
+            quantity: it.quantity ?? 0,
+            condition: it.condition ?? 'bon',
+        }));
+        setModalInitialItems(preset);
+        setInvOpen(true);
+    }
+
+    const handleUpsertInventory = async (data: InventoryFormData) => {
         if (!currentBooking) return;
         setError('');
 
         try {
             const isGuest = mode === 'clientGuest';
             const authHeader = isGuest ? { Authorization: `Bearer ${guestToken}` } : { Authorization: `Bearer ${token}` };
+
+            // if there is an editInventoryId, that means we are editing the inventory
+            if (editInventoryId) {
+                const res = await fetch(`/api/inventories/${editInventoryId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeader,
+                    },
+                    body: JSON.stringify({
+                        // selon ton UpdateInventorySchema: on envoie items (et comment si plus tard tu l’ajoutes)
+                        replace_items: data.items.map(it => ({
+                            name: it.name,
+                            quantity: it.quantity,
+                            condition: it.condition,
+                        })),
+                    }),
+                });
+
+                if (!res.ok) {
+                    const j = await res.json().catch(() => ({}));
+                    const msg = j?.error || j?.message || `HTTP ${res.status}`;
+                    throw new Error(msg);
+                }
+                await fetchAllInventoriesByBookingId(currentBooking.booking_id);
+                setEditInventoryId(null);
+                setModalInitialItems([]);
+                return;
+            }
 
             const url = isGuest
                 ? `/api/guest/bookings/${currentBooking.booking_id}/inventories`
@@ -300,7 +347,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
             if (!lastInventory) {
                 return (
                     <button
-                        onClick={() => openInventoryModal('arrivee')}
+                        onClick={() => openCreateInventory('arrivee')}
                         className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
                         Faire l'état des lieux d'arrivée
@@ -312,29 +359,12 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                 return (
                     <>
                         <button
-                            onClick={() => openInventoryModal('arrivee')}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
-                        >
-                            Modifier état des lieux d'arrivée
-                        </button>
-                        <button
-                            onClick={() => openInventoryModal('depart')}
+                            onClick={() => openCreateInventory('depart')}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                         >
-                            Faire l'état des lieux de départ
+                            Effectuer inventaire de sortie
                         </button>
                     </>
-                );
-            }
-
-            if (lastInventory.type === 1) {
-                return (
-                    <button
-                        onClick={() => openInventoryModal('depart')}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
-                    >
-                        Modifier les inventaires
-                    </button>
                 );
             }
 
@@ -345,7 +375,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
             if (!lastInventory) {
                 return (
                     <button
-                        onClick={() => openInventoryModal('arrivee')}
+                        onClick={() => openCreateInventory('arrivee')}
                         className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
                         Remplir l'état des lieux d'arrivée
@@ -459,7 +489,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                                         {/* En-tête carte */}
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                             <div className="text-sm text-gray-700">
-                                                <span className="font-medium">{inv.type === 0 ? 'Arrivée' : 'Départ'}</span>
+                                                <span className="font-medium">{inv.type === 0 ? 'Entrée' : 'Sortie'}</span>
                                                 {' · '}
                                                 {isValid(parseISO(inv.createdAt))
                                                     ? format(parseISO(inv.createdAt), 'dd MMM yyyy HH:mm', { locale: fr })
@@ -555,7 +585,8 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                 isOpen={invOpen}
                 onClose={() => setInvOpen(false)}
                 type={invType}
-                onSubmit={handleCreateInventory}
+                initialItems={modalInitialItems}
+                onSubmit={handleUpsertInventory}
             />
         </>
     );

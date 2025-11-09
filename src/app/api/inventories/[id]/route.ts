@@ -25,6 +25,25 @@ export async function GET(req: NextRequest, { params }: Params) {
   }
 }
 
-// (Optionnel) PUT / DELETE si tu en as besoin plus tard
-// export async function PUT(req: NextRequest, { params }: Params) { ... }
+export async function PUT(req: NextRequest, { params }: Params) {
+    try {
+        const paramsId = (await params).id;
+        const body = await req.json();
+        const auth = req.headers.get('authorization') ?? '';
+        const r = await fetch(`${backendURL}/api/inventories/${paramsId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: auth },
+            next: { revalidate: 0 },
+            body: JSON.stringify(body),
+        });
+
+        // Si backend renvoie 204/texte, évite le crash du .json()
+        const data = await r.json();
+        return NextResponse.json(data, { status: r.status });
+    } catch (e) {
+        return NextResponse.json({ message: 'Proxy error' }, { status: 500 });
+    }
+}
+
+// (Optionnel) DELETE si tu en as besoin plus tard
 // export async function DELETE(req: NextRequest, { params }: Params) { ... }
