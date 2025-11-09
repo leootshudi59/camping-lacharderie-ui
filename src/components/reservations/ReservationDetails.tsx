@@ -359,29 +359,12 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                 return (
                     <>
                         <button
-                            onClick={() => openCreateInventory('arrivee')}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
-                        >
-                            Modifier état des lieux d'arrivée
-                        </button>
-                        <button
                             onClick={() => openCreateInventory('depart')}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                         >
-                            Faire l'état des lieux de départ
+                            Effectuer inventaire de sortie
                         </button>
                     </>
-                );
-            }
-
-            if (lastInventory.type === 1) {
-                return (
-                    <button
-                        onClick={() => openCreateInventory('depart')}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
-                    >
-                        Modifier les inventaires
-                    </button>
                 );
             }
 
