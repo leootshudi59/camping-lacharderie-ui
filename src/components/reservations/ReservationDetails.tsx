@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Mail, Phone, User2, ArrowLeft, ClipboardList } from 'lucide-react';
+import { CalendarDays, Mail, Phone, User2, ArrowLeft, ClipboardList, Pencil } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { format, isValid, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -38,6 +38,11 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
     const [invOpen, setInvOpen] = useState(false);
     const [invType, setInvType] = useState<'arrivee' | 'depart'>('arrivee');
 
+    /* Only for admins */
+    const [inventories, setInventories] = useState<InventorySummary[]>([]);
+    const [editInventoryId, setEditInventoryId] = useState<string | null>(null);
+    const [modalInitialItems, setModalInitialItems] = useState<InventoryFormData['items']>([]);
+
     const router = useRouter();
     const pathname = usePathname();
 
@@ -52,8 +57,19 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
 
     const fetchInventoryById = async (inventoryId: string) => {
         try {
-            const res = await fetch(`/api/inventories/${inventoryId}`, {
-                headers: { Authorization: `Bearer ${token}` },
+            const isGuest = mode === 'clientGuest';
+            console.log("is Guest?", isGuest);
+
+            const authHeader = isGuest
+                ? { Authorization: `Bearer ${guestToken}` }
+                : { Authorization: `Bearer ${token}` };
+
+            const url = isGuest
+                ? `/api/guest/bookings/${booking_id}/inventories/${inventoryId}`
+                : `/api/inventories/${inventoryId}`;
+
+            const res = await fetch(url, {
+                headers: authHeader,
             });
 
             if (res.status === 404) {
@@ -62,7 +78,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
             }
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const inv = await res.json();
-            console.log("data", inv);
+            console.log("One inventory data", inv);
 
             const normType: 0 | 1 = inv.type === 'arrival' ? 0 : 1;
             const items: InventoryItemUI[] = Array.isArray(inv.inventory_items)
@@ -93,9 +109,54 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
         }
     }
 
+    const fetchAllInventoriesByBookingId = async (bookingId: string) => {
+        try {
+            console.log('fetchAllInventoriesByBookingId')
+            if (!token || !bookingId) return;
+            console.log("token", token);
+            setLoading(true);
+
+            const res = await fetch(`/api/inventories/${bookingId}/inventories`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (res.status === 404) {
+                setInventories([]);
+                return [];
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const data = await res.json();
+            console.log("All inventories data", data)
+            const mapped: InventorySummary[] = Array.isArray(data)
+                ? data.map((inv: any) => ({
+                    id: inv.inventory_id,
+                    type: inv.type === 'arrival' ? 0 : 1,
+                    createdAt: inv.created_at,
+                    comment: inv.comment ?? null,
+                    items: Array.isArray(inv.inventory_items)
+                        ? inv.inventory_items.map((it: any) => ({
+                            inventoryItemId: it.inventory_item_id,
+                            name: it.name,
+                            quantity: it.quantity,
+                            condition: it.condition ?? null,
+                        }))
+                        : [],
+                }))
+                : [];
+            setInventories(mapped);
+            return mapped;
+        } catch (e: any) {
+            console.log('error ouai ouai')
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const fetchBookingById = async () => {
         try {
-            console.log('hello')
+            console.log('fetchBookingById')
             if (!token || !booking_id) return;
             console.log("token", token);
             setLoading(true);
@@ -117,6 +178,8 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
             setCurrentBooking(mappedBooking);
 
             if (mappedBooking.lastInventoryId) {
+                const allInvs = await fetchAllInventoriesByBookingId(booking_id);
+                console.log("All inventories", allInvs)
                 await fetchInventoryById(mappedBooking.lastInventoryId);
             } else {
                 setLastInventory(null);
@@ -168,42 +231,102 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
     useEffect(() => {
         if (mode === 'admin') fetchBookingById();
         if (mode === 'clientGuest') fetchGuestBookingById();
-    }, [token, booking_id, mapReservation]);
+    }, [token, guestToken, booking_id, mapReservation]);
 
 
-    const openInventoryModal = (type: 'arrivee' | 'depart') => {
+    const openCreateInventory = (type: 'arrivee' | 'depart') => {
+        setEditInventoryId(null);
         setInvType(type);
         setInvOpen(true);
     }
 
-    const handleCreateInventory = async (data: InventoryFormData) => {
+    const openEditInventory = (inv: InventorySummary) => {
+        setEditInventoryId(inv.id);
+        setInvType(inv.type === 0 ? 'arrivee' : 'depart');
+        const preset = (inv.items || []).map(it => ({
+            id: it.inventoryItemId ?? (Math.random() + '').slice(2),
+            name: it.name,
+            quantity: it.quantity ?? 0,
+            condition: it.condition ?? 'bon',
+        }));
+        setModalInitialItems(preset);
+        setInvOpen(true);
+    }
+
+    const handleUpsertInventory = async (data: InventoryFormData) => {
         if (!currentBooking) return;
         setError('');
 
         try {
-            const payload = {
-                campsite_id: currentBooking.campsite_id,
-                booking_id: currentBooking.booking_id, // facultatif côté backend
-                type: data.type === 'arrivee' ? 'arrival' : 'departure',
-                // comment: éventuellement ajouter un champ commentaire dans la modale si tu veux
-                items: data.items.map(it => ({
-                    name: it.name,
-                    quantity: it.quantity,
-                    condition: it.condition,
-                })),
-            };
+            const isGuest = mode === 'clientGuest';
+            const authHeader = isGuest ? { Authorization: `Bearer ${guestToken}` } : { Authorization: `Bearer ${token}` };
 
-            const res = await fetch(`/api/inventories`, {
+            // if there is an editInventoryId, that means we are editing the inventory
+            if (editInventoryId) {
+                const res = await fetch(`/api/inventories/${editInventoryId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeader,
+                    },
+                    body: JSON.stringify({
+                        // selon ton UpdateInventorySchema: on envoie items (et comment si plus tard tu l’ajoutes)
+                        replace_items: data.items.map(it => ({
+                            name: it.name,
+                            quantity: it.quantity,
+                            condition: it.condition,
+                        })),
+                    }),
+                });
+
+                if (!res.ok) {
+                    const j = await res.json().catch(() => ({}));
+                    const msg = j?.error || j?.message || `HTTP ${res.status}`;
+                    throw new Error(msg);
+                }
+                await fetchAllInventoriesByBookingId(currentBooking.booking_id);
+                setEditInventoryId(null);
+                setModalInitialItems([]);
+                return;
+            }
+
+            const url = isGuest
+                ? `/api/guest/bookings/${currentBooking.booking_id}/inventories`
+                : `/api/inventories`;
+
+            const payload = isGuest
+                ? {
+                    // booking_id injecté via l'URL, ignorer côté body
+                    type: data.type === 'arrivee' ? 'arrival' : 'departure',
+                    comment: undefined, // ou data.comment si tu ajoutes ce champ dans la modal
+                    items: data.items.map(it => ({
+                        name: it.name,
+                        quantity: it.quantity,
+                        condition: it.condition,
+                    })),
+                }
+                : {
+                    campsite_id: currentBooking.campsite_id,
+                    booking_id: currentBooking.booking_id,
+                    type: data.type === 'arrivee' ? 'arrival' : 'departure',
+                    items: data.items.map(it => ({
+                        name: it.name,
+                        quantity: it.quantity,
+                        condition: it.condition,
+                    })),
+                };
+
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                    ...authHeader,
                 },
                 body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
-                // renvoie l’erreur du backend si dispo
+                // sends the error message from the backend if available
                 const j = await res.json().catch(() => ({}));
                 const msg = j?.error || j?.message || `HTTP ${res.status}`;
                 throw new Error(msg);
@@ -215,7 +338,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
             setCurrentBooking(prev => prev ? { ...prev, lastInventoryId: created.inventory_id } : prev);
             await fetchInventoryById(created.inventory_id);
         } catch (e: any) {
-            setError(e.message || 'Erreur lors de la création de l’inventaire');
+            setError(e.message || 'Erreur lors de la création de l\'inventaire');
         }
     };
 
@@ -224,7 +347,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
             if (!lastInventory) {
                 return (
                     <button
-                        onClick={() => openInventoryModal('arrivee')}
+                        onClick={() => openCreateInventory('arrivee')}
                         className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
                         Faire l'état des lieux d'arrivée
@@ -236,36 +359,33 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                 return (
                     <>
                         <button
-                            onClick={() => openInventoryModal('arrivee')}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
-                        >
-                            Modifier état des lieux d'arrivée
-                        </button>
-                        <button
-                            onClick={() => openInventoryModal('depart')}
+                            onClick={() => openCreateInventory('depart')}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                         >
-                            Faire l'état des lieux de départ
+                            Effectuer inventaire de sortie
                         </button>
                     </>
                 );
             }
 
-            if (lastInventory.type === 1) {
+            return null;
+        }
+        if (mode === 'clientGuest') {
+            // The camper can ONLY make the ARRIVAL inventory, and ONLY if there is none yet
+            if (!lastInventory) {
                 return (
                     <button
-                        onClick={() => openInventoryModal('depart')}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
+                        onClick={() => openCreateInventory('arrivee')}
+                        className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition text-sm font-medium"
                     >
-                        Modifier les inventaires
+                        Remplir l'état des lieux d'arrivée
                     </button>
                 );
             }
-
             return null;
-        }
-        return null
-    };
+        };
+        return null;
+    }
 
     if (loading) return <Loader className="h-56" />;
 
@@ -321,7 +441,7 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                 </div>
 
                 {/* Résumé inventaire */}
-                {lastInventory && (
+                {mode !== 'admin' && lastInventory && (
                     <div className="mt-6 space-y-4">
                         <div className="flex items-center gap-2 font-semibold text-gray-800">
                             <ClipboardList className="w-5 h-5 text-green-600" />
@@ -350,17 +470,123 @@ export default function ReservationDetails({ booking_id, mode }: ReservationDeta
                     </div>
                 )}
 
+                {/* Liste complète des inventaires (admin) */}
+                {mode === 'admin' && inventories.length > 0 && (
+                    <div className="mt-8 space-y-4">
+                        <div className="flex items-center gap-2 font-semibold text-gray-800">
+                            <ClipboardList className="w-5 h-5 text-green-600" />
+                            <span>Inventaires de cette réservation</span>
+                        </div>
+
+                        <div className="space-y-3">
+                            {[...inventories]
+                                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                                .map((inv) => (
+                                    <div
+                                        key={inv.id}
+                                        className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition"
+                                    >
+                                        {/* En-tête carte */}
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <div className="text-sm text-gray-700">
+                                                <span className="font-medium">{inv.type === 0 ? 'Entrée' : 'Sortie'}</span>
+                                                {' · '}
+                                                {isValid(parseISO(inv.createdAt))
+                                                    ? format(parseISO(inv.createdAt), 'dd MMM yyyy HH:mm', { locale: fr })
+                                                    : '—'}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                                                    {inv.items.length} élément{inv.items.length > 1 ? 's' : ''}
+                                                </div>
+
+                                                {/* Bouton Modifier (admin only) */}
+                                                {mode === 'admin' && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openEditInventory(inv)}
+                                                        className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-300 focus:outline-none focus:ring-2 focus:ring-green-200 transition font-medium"
+                                                        aria-label="Modifier l'inventaire"
+                                                    >
+                                                        <Pencil className="w-4 h-4" />
+                                                        Corriger
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Commentaire si présent */}
+                                        {inv.comment && (
+                                            <div className="mt-2 text-sm text-gray-600">
+                                                <span className="font-medium">Commentaire : </span>
+                                                {inv.comment}
+                                            </div>
+                                        )}
+
+                                        {/* Items */}
+                                        {/* {inv.items.length > 0 && (
+                                            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {inv.items.map((it) => (
+                                                    <div key={it.inventoryItemId} className="rounded-md border border-gray-200 p-3">
+                                                        <div className="text-sm font-semibold text-gray-800">{it.name}</div>
+                                                        <div className="mt-1 text-xs text-gray-600">
+                                                            Qté : <span className="font-medium">{it.quantity}</span>{' '}
+                                                            · État : <span className="font-medium">{it.condition ?? '—'}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )} */}
+                                        {inv.items.length > 0 ? (
+                                            <div className="mt-3 overflow-x-auto">
+                                                <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                                                    <thead className="bg-gray-50 text-gray-700">
+                                                        <tr>
+                                                            <th className="px-3 py-2 text-left w-1/2">Élément</th>
+                                                            <th className="px-3 py-2 text-right w-24">Quantité</th>
+                                                            <th className="px-3 py-2 text-left w-1/3">État</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-200">
+                                                        {inv.items.map((it) => (
+                                                            <tr key={it.inventoryItemId} className="hover:bg-gray-50">
+                                                                <td className="px-3 py-2 text-gray-800 font-medium">
+                                                                    {it.name}
+                                                                </td>
+                                                                <td className="px-3 py-2 text-right text-gray-700">
+                                                                    {it.quantity}
+                                                                </td>
+                                                                <td className="px-3 py-2 text-gray-700">
+                                                                    {it.condition ?? '—'}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <div className="mt-3 text-sm text-gray-600 italic">
+                                                Aucun élément renseigné pour cet inventaire.
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Boutons */}
                 <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
                     {renderButtons()}
                 </div>
             </div>
+
             <InventoryFormModal
                 isOpen={invOpen}
                 onClose={() => setInvOpen(false)}
                 type={invType}
-                onSubmit={handleCreateInventory}
+                initialItems={modalInitialItems}
+                onSubmit={handleUpsertInventory}
             />
         </>
     );
