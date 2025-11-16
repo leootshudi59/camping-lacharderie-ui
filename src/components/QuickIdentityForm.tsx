@@ -66,11 +66,11 @@ export default function QuickIdentityForm() {
     >
       <div className="flex flex-col items-center mb-2">
         <img
-          src="/logo-camping.svg"
+          src="/images/camping_logo.png"
           alt="Logo Camping"
           className="mb-3"
-          width={64}
-          height={64}
+          width={192}
+          height={192}
         />
         <h1 className="text-2xl font-bold text-green-700 text-center">
           Bienvenue !

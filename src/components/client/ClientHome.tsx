@@ -66,7 +66,7 @@ export default function ClientHome() {
       {/* Header / Logo */}
       <header className="flex flex-col items-center justify-center py-10 px-4">
         <img
-          src="/logo-camping.svg"
+          src="/images/camping_slogo.png"
           alt="Logo Camping"
           width={80}
           height={80}
