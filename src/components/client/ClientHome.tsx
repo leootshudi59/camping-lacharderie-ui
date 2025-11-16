@@ -66,10 +66,10 @@ export default function ClientHome() {
       {/* Header / Logo */}
       <header className="flex flex-col items-center justify-center py-10 px-4">
         <img
-          src="/images/camping_slogo.png"
+          src="/images/camping_logo.png"
           alt="Logo Camping"
-          width={80}
-          height={80}
+          width={192}
+          height={192}
           className="mb-4"
         />
         <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-2 tracking-tight text-center">
