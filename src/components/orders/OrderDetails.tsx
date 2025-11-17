@@ -1,8 +1,10 @@
 'use client';
 
-import { Order } from '@/types/order';
+import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Order } from '@/types/order';
 import OrderItemsTable from './OrderItemsTable';
 
 type Props = {
@@ -18,6 +20,11 @@ const statusLabels: Record<string, { label: string; color: string }> = {
 };
 
 export default function OrderDetails({ order, onClose }: Props) {
+  console.log("order", order);
+  const { token, guestToken } = useAuth();
+  const [loading, setLoading] = useState(true);
+  
+  
   const status = statusLabels[order.status];
 
   return (
@@ -46,7 +53,7 @@ export default function OrderDetails({ order, onClose }: Props) {
         <div>
           <h3 className="text-lg font-semibold text-gray-700 mb-1">Réservation</h3>
           <div className="text-sm text-gray-800">
-            {order.res_name ? <>{order.res_name}</> : <span className="italic text-gray-400">–</span>}
+            {order.booking_name ? <>{order.booking_name}</> : <span className="italic text-gray-400">–</span>}
           </div>
           {/* Optionnel: lien vers la fiche résa */}
           {order.reservation_id && (
@@ -62,7 +69,7 @@ export default function OrderDetails({ order, onClose }: Props) {
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-700 mb-1">Produits</h3>
-          <OrderItemsTable items={order.items} />
+          <OrderItemsTable items={order.order_items} />
         </div>
         <div className="flex justify-end gap-3 mt-6">
           {order.status !== 'delivered' && order.status !== 'cancelled' && (

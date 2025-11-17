@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Calendar, Mail, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
-import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
-import BookingForm, { BookingFormData } from './BookingForm';
 import { useApp } from '@/context/AppContext';
+import Loader from '@/components/ui/Loader';
+import BookingForm, { BookingFormData } from './BookingForm';
 
 type Booking = {
   booking_id: string;

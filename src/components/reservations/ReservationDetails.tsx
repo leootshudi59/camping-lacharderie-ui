@@ -1,14 +1,14 @@
 'use client';
 
-import { CalendarDays, Mail, Phone, User2, ArrowLeft, ClipboardList, Pencil } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { CalendarDays, Mail, Phone, User2, ArrowLeft, ClipboardList, Pencil } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { format, isValid, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useAuth } from '@/context/AuthContext';
-import { useEffect, useState } from 'react';
-import { useApp } from '@/context/AppContext';
+import Loader from '@/components/ui/Loader';
 import { Booking } from '@/types/reservation';
-import Loader from '../ui/Loader';
 import { InventoryItemUI, InventorySummary } from '@/types/inventory';
 import InventoryFormModal, { InventoryFormData } from '../inventories/InventoryForm';
 
@@ -30,7 +30,7 @@ type ReservationDetailsProps = {
 
 export default function ReservationDetails({ booking_id, mode }: ReservationDetailsProps) {
     const { token, guestToken } = useAuth();
-    const { mapReservation } = useApp()
+    const { mapReservation } = useApp();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
