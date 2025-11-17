@@ -90,7 +90,7 @@ export default function OrdersPage() {
                 </span>
               </div>
               <ul className="divide-y divide-gray-100 mb-2">
-                {order.items.map((item) => (
+                {order.order_items.map((item) => (
                   <li key={item.order_item_id} className="flex justify-between py-1 text-gray-700">
                     <span>{item.product_name}</span>
                     <span className="font-semibold">{item.quantity}</span>
