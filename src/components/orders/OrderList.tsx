@@ -14,6 +14,8 @@ const statusColors: Record<string, string> = {
 
 export default function OrderList() {
   const [orders] = useState<Order[]>(mockOrders);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
