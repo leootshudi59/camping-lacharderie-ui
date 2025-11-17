@@ -7,6 +7,7 @@ type Props = {
 };
 
 export default function OrderItemsTable({ items }: Props) {
+  console.log("items", items)
   return (
     <div>
       <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -19,7 +20,7 @@ export default function OrderItemsTable({ items }: Props) {
         <tbody>
           {items.map((item) => (
             <tr key={item.order_item_id} className="hover:bg-green-50">
-              <td className="px-4 py-2">{item.product_name}</td>
+              <td className="px-4 py-2">{item.products.name}</td>
               <td className="px-4 py-2">{item.quantity}</td>
             </tr>
           ))}
