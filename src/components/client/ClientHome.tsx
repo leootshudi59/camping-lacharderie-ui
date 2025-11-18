@@ -116,7 +116,7 @@ export default function ClientHome() {
               <p className="text-gray-500 text-sm">Remplir votre inventaire d'arrivée</p>
             </div>
           </Link>
-          <Link href="/bread-order" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
+          <Link href="/orders" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
             <ShoppingCart className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
             <div>
               <span className="text-lg font-semibold text-gray-800">Commandes</span>

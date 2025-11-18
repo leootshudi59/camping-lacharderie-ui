@@ -1,15 +1,12 @@
+import { Product } from "./product";
+
 export type OrderStatus = 'received' | 'delivered' | 'cancelled' | 'paid';
 
 export type OrderItem = {
   order_item_id: string;
   product_id: string;
   quantity: number;
-  products: {
-    product_id: string;
-    name: string;
-    price: number;
-    image: string;
-  };
+  products: Product;
 };
 
 export type Order = {
