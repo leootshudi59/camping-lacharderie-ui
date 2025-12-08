@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {useTranslation} from 'next-i18next';
 import { CalendarDays, ShoppingCart, AlertTriangle, MapPinned } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -25,6 +26,7 @@ const mapToCard = (b: any): ReservationCard => ({
 
 export default function ClientHome() {
   const { guestToken, guestBooking, logoutGuest } = useAuth();
+  const { t } = useTranslation('footer');
   const [card, setCard] = useState<ReservationCard | null>(
     guestBooking ? mapToCard(guestBooking) : null
   );

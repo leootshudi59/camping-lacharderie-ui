@@ -122,6 +122,15 @@ export default function OrderForm({
     [selectedItems]
   );
 
+  const totalPrice = useMemo(
+    () =>
+      selectedItems.reduce((sum, it) => {
+        const unit = it.product.price ? Number(it.product.price) : 0;
+        return sum + unit * it.quantity;
+      }, 0),
+    [selectedItems]
+  );
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (submitting) return;
@@ -306,25 +315,56 @@ export default function OrderForm({
       {isSummaryOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-            <h2 className="text-lg font-semibold mb-4">Résumé de la commande</h2>
-            <ul className="space-y-2">
-              {selectedItems.map((it) => (
-                <li key={it.product.product_id} className="flex items-center justify-between">
-                  <span>{it.product.name}</span>
-                  <span>{it.quantity} x {it.product.price} €</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 flex justify-between">
-              <span>Total</span>
-              <span>{totalQuantity} x {products[0]?.price} €</span>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Résumé de la commande</h2>
+              <button
+                type="button"
+                onClick={() => setIsSummaryOpen(false)}
+                className="p-1 rounded-full hover:bg-gray-100 transition"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
             </div>
+
+            <ul className="space-y-2">
+              {selectedItems.map((it) => {
+                const unit = it.product.price ? Number(it.product.price) : 0;
+                const lineTotal = unit * it.quantity;
+
+                return (
+                  <li
+                    key={it.product.product_id}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-800">
+                        {it.product.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {it.quantity} × {unit.toFixed(2)} €
+                      </span>
+                    </div>
+                    <span className="font-semibold text-gray-900">
+                      {lineTotal.toFixed(2)} €
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="mt-4 flex justify-between border-t border-gray-100 pt-3 text-sm">
+              <span className="font-semibold text-gray-800">Total</span>
+              <span className="font-semibold text-gray-900">
+                {totalPrice.toFixed(2)} €
+              </span>
+            </div>
+
             <button
               type="button"
               onClick={() => setIsSummaryOpen(false)}
               className="mt-4 w-full inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 transition"
             >
-              Valider ma commande
+              Fermer
             </button>
           </div>
         </div>

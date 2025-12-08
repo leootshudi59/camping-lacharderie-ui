@@ -11,6 +11,7 @@ type GuestOrderItem = {
     quantity: number;
     products?: {
         name: string;
+        price?: number | string | null;
     } | null;
 };
 
@@ -150,6 +151,14 @@ export default function UserGuestOrderList() {
         );
     }
 
+    const computeOrderTotal = (order: GuestOrder): number =>
+        order.order_items.reduce((sum, item) => {
+            const raw = item.products?.price;
+            const unit = raw != null ? Number(raw) : 0;
+            if (!Number.isFinite(unit)) return sum;
+            return sum + unit * item.quantity;
+        }, 0);
+
     return (
         <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -172,42 +181,83 @@ export default function UserGuestOrderList() {
                 </div>
             ) : (
                 <div className="space-y-6">
-                    {orders.map((order) => (
-                        <div key={order.order_id} className="bg-white rounded-xl shadow p-5">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-1">
-                                <div className="flex items-center gap-2 text-gray-700 text-sm">
-                                    <CalendarDays className="w-4 h-4 text-green-600" />
-                                    <span>
-                                        Commande du{' '}
-                                        {new Date(order.created_at).toLocaleDateString('fr-FR', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric',
-                                        })}
+                    {orders.map((order) => {
+                        const orderTotal = computeOrderTotal(order);
+
+                        return (
+                            <div
+                                key={order.order_id}
+                                className="bg-white rounded-xl shadow p-5"
+                            >
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-1">
+                                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                                        <CalendarDays className="w-4 h-4 text-green-600" />
+                                        <span>
+                                            Commande du{' '}
+                                            {new Date(order.created_at).toLocaleDateString(
+                                                'fr-FR',
+                                                {
+                                                    day: '2-digit',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                }
+                                            )}
+                                        </span>
+                                    </div>
+                                    <span
+                                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusLabels[order.status]?.color || ''
+                                            }`}
+                                    >
+                                        {statusLabels[order.status]?.icon}
+                                        {statusLabels[order.status]?.label || order.status}
                                     </span>
                                 </div>
-                                <span
-                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusLabels[order.status]?.color || ''
-                                        }`}
-                                >
-                                    {statusLabels[order.status]?.icon}
-                                    {statusLabels[order.status]?.label || order.status}
-                                </span>
-                            </div>
 
-                            <ul className="divide-y divide-gray-100 mb-2">
-                                {order.order_items.map((item) => (
-                                    <li
-                                        key={item.order_item_id}
-                                        className="flex justify-between py-1 text-gray-700"
-                                    >
-                                        <span>{item.products?.name ?? 'Produit'}</span>
-                                        <span className="font-semibold">{item.quantity}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
+                                <ul className="divide-y divide-gray-100 mb-3">
+                                    {order.order_items.map((item) => {
+                                        const raw = item.products?.price;
+                                        const unit = raw != null ? Number(raw) : 0;
+                                        const hasPrice = Number.isFinite(unit) && unit > 0;
+                                        const lineTotal = hasPrice ? unit * item.quantity : 0;
+
+                                        return (
+                                            <li
+                                                key={item.order_item_id}
+                                                className="flex justify-between py-1 text-gray-700 text-sm"
+                                            >
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">
+                                                        {item.products?.name ?? 'Produit'}
+                                                    </span>
+                                                    {hasPrice && (
+                                                        <span className="text-xs text-gray-500">
+                                                            {item.quantity} × {unit.toFixed(2)} €
+                                                        </span>
+                                                    )}
+                                                    {!hasPrice && (
+                                                        <span className="text-xs text-gray-500">
+                                                            Quantité : {item.quantity}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {hasPrice && (
+                                                    <span className="font-semibold">
+                                                        {lineTotal.toFixed(2)} €
+                                                    </span>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+
+                                {orderTotal > 0 && (
+                                    <div className="flex justify-end text-sm font-semibold text-gray-900">
+                                        Total : {orderTotal.toFixed(2)} €
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 

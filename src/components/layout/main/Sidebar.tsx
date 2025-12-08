@@ -11,7 +11,7 @@ interface SidebarProps {
 const navItems = [
   { name: 'Accueil', icon: Home, href: '/' },
   { name: 'État des lieux', icon: AlertTriangle, href: '/inventory' },
-  { name: 'Pain & Commandes', icon: ShoppingCart, href: '/bread-order' },
+  { name: 'Pain & Commandes', icon: ShoppingCart, href: '/orders' },
   { name: 'Événements', icon: CalendarDays, href: '/events' },
   { name: 'Carte du Camping', icon: MapPinned, href: '/map' },
 ];
