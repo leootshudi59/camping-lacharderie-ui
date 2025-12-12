@@ -8,21 +8,19 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { notifySuccess } from '@/lib/toast';
 import FormField from './ui/FormField';
+import { useLocale, useTranslations } from 'next-intl';
+import LanguageSwitcher from './ui/LangageSwitcher';
 
 export default function QuickIdentityForm() {
+  const t = useTranslations('QuickIdentityForm');
+  const locale = useLocale();
+  const router = useRouter();
+
   const [name, setName] = useState('');
   const [reservationNumber, setReservationNumber] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const { loginGuest } = useAuth();
-
-  // Mock : les paires valides
-  const mockValidReservations = [
-    { name: 'Dupont', reservationNumber: '12345', rentalName: "15", endDate: '2025-07-17' },
-    { name: 'Martin', reservationNumber: '23456', rentalName: "Tente 3A", endDate: '2025-07-19' },
-    { name: 'Legrand', reservationNumber: '34567', rentalName: "Cabane 8", endDate: '2025-07-22' },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,14 +71,16 @@ export default function QuickIdentityForm() {
           height={192}
         />
         <h1 className="text-2xl font-bold text-green-700 text-center">
-          Bienvenue !
+          {t('title')}
         </h1>
         <p className="text-gray-600 text-center text-sm mt-1">
-          Veuillez saisir votre nom <span className="hidden sm:inline">et</span> numéro de réservation pour accéder à vos services.
+          {t.rich('subtitle', {
+            and: (chunks) => <span className="hidden sm:inline">{chunks}</span>
+          })}
         </p>
       </div>
       <FormField
-        label="Nom de réservation"
+        label={t('reservationNameLabel')}
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -90,7 +90,7 @@ export default function QuickIdentityForm() {
       />
 
       <FormField
-        label="Numéro de réservation"
+        label={t('reservationNumberLabel')}
         type="text"
         value={reservationNumber}
         onChange={(e) => setReservationNumber(e.target.value)}
@@ -109,7 +109,7 @@ export default function QuickIdentityForm() {
         className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center disabled:opacity-60"
       >
         {loading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
-        Accéder à mon espace campeur
+        {t('submit')}
       </button>
     </form>
   );

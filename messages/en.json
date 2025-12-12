@@ -1,0 +1,25 @@
+{
+  "Sidebar": {
+    "welcome": "🏕️ Welcome!",
+    "logout": "Log out",
+    "links": {
+      "home": "Home",
+      "inventory": "Check-in inventory",
+      "orders": "Bread & Orders",
+      "events": "Events",
+      "map": "Camp map"
+    }
+  },
+  "QuickIdentityForm": {
+    "title": "Welcome!",
+    "subtitle": "Please enter your booking name and booking number to access your camper area.",
+    "reservationNameLabel": "Booking name",
+    "reservationNumberLabel": "Booking number",
+    "reservationNamePlaceholder": "e.g. Dupont",
+    "reservationNumberPlaceholder": "e.g. 12345",
+    "submit": "Access my camper area",
+    "invalidCredentials": "Incorrect name or booking number",
+    "genericError": "Login error",
+    "success": "Login successful!"
+  }
+}

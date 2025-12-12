@@ -1,0 +1,25 @@
+{
+  "Sidebar": {
+    "welcome": "🏕️ Bienvenue !",
+    "logout": "Déconnexion",
+    "links": {
+      "home": "Accueil",
+      "inventory": "État des lieux",
+      "orders": "Pain & Commandes",
+      "events": "Événements",
+      "map": "Carte du Camping"
+    }
+  },
+  "QuickIdentityForm": {
+    "title": "Bienvenue !",
+    "subtitle": "Veuillez saisir votre nom et votre numéro de réservation pour accéder à vos services.",
+    "reservationNameLabel": "Nom de réservation",
+    "reservationNumberLabel": "Numéro de réservation",
+    "reservationNamePlaceholder": "Ex : Dupont",
+    "reservationNumberPlaceholder": "Ex : 12345",
+    "submit": "Accéder à mon espace campeur",
+    "invalidCredentials": "Nom ou numéro de réservation incorrect",
+    "genericError": "Erreur lors de la connexion",
+    "success": "Connexion réussie !"
+  }
+}
