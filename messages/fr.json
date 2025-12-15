@@ -21,5 +21,82 @@
     "invalidCredentials": "Nom ou numéro de réservation incorrect",
     "genericError": "Erreur lors de la connexion",
     "success": "Connexion réussie !"
+  },
+  "ClientHome": {
+    "logoAlt": "Logo du camping",
+    "title": "Bienvenue au Camping La Charderie",
+    "subtitle": "Profitez de votre séjour et gérez tout facilement ici !",
+    "booking": {
+      "numberLabel": "Nº réservation",
+      "rentalLabel": "Emplacement",
+      "endLabel": "Fin du séjour",
+      "view": "Voir ma réservation"
+    },
+    "cards": {
+      "inventory": {
+        "title": "État des lieux",
+        "desc": "Remplir votre inventaire d'arrivée"
+      },
+      "orders": {
+        "title": "Commandes",
+        "desc": "Commander du pain, ou autres produits pour petit déjeuner"
+      },
+      "events": {
+        "title": "Événements",
+        "desc": "Découvrir les animations du camping"
+      },
+      "map": {
+        "title": "Carte du camping",
+        "desc": "Se repérer facilement sur place"
+      }
+    },
+    "footer": "© {year} La Charderie — Application réalisée par Léo Otshudi."
+  },
+  "Orders": {
+    "title": "Mon historique de commandes",
+    "new": "Nouvelle commande",
+    "empty": "Vous n'avez pas encore passé de commande.",
+    "orderOf": "Commande du",
+    "total": "Total",
+    "quantity": "Quantité",
+    "productFallback": "Produit",
+    "status": {
+      "received": "Reçue",
+      "delivered": "Livrée",
+      "paid": "Payée",
+      "cancelled": "Annulée"
+    },
+    "errors": {
+      "notLogged": "Vous devez être connecté en tant que campeur pour voir vos commandes.",
+      "load": "Erreur lors du chargement des commandes",
+      "loadPrefix": "Impossible de charger les commandes"
+    }
+  },
+  "OrderForm": {
+    "title": "Nouvelle commande",
+    "subtitle": "Choisissez vos produits et ajustez les quantités avec les boutons ci-dessous.",
+    "emptyProducts": "Aucun produit disponible pour le moment.",
+    "cancel": "Annuler",
+    "summary": "Résumé de la commande",
+    "summaryTitle": "Résumé de la commande",
+    "submit": "Valider ma commande",
+    "submitting": "Envoi en cours…",
+    "total": "Total",
+    "close": "Fermer",
+    "errors": {
+      "loadProducts": "Impossible de charger les produits",
+      "missingBooking": "Identifiant de réservation manquant.",
+      "noItems": "Veuillez ajouter au moins un produit avec une quantité valide.",
+      "createOrder": "Erreur lors de la création de la commande"
+    },
+    "toasts": {
+      "loadProductsError": "Impossible de récupérer les produits.",
+      "created": "Commande créée avec succès !"
+    },
+    "aria": {
+      "close": "Fermer",
+      "increment": "Ajouter un {name}",
+      "decrement": "Retirer un {name}"
+    }
   }
 }

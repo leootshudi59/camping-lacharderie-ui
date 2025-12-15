@@ -21,5 +21,82 @@
     "invalidCredentials": "Incorrect name or booking number",
     "genericError": "Login error",
     "success": "Login successful!"
+  },
+  "ClientHome": {
+    "logoAlt": "Camping logo",
+    "title": "Welcome to Camping La Charderie",
+    "subtitle": "Enjoy your stay and manage everything easily here!",
+    "booking": {
+      "numberLabel": "Booking number",
+      "rentalLabel": "Pitch",
+      "endLabel": "End of stay",
+      "view": "View my booking"
+    },
+    "cards": {
+      "inventory": {
+        "title": "Check-in inventory",
+        "desc": "Fill out your arrival inventory"
+      },
+      "orders": {
+        "title": "Orders",
+        "desc": "Order bread and breakfast items"
+      },
+      "events": {
+        "title": "Events",
+        "desc": "Discover the campsite activities"
+      },
+      "map": {
+        "title": "Camp map",
+        "desc": "Find your way around easily"
+      }
+    },
+    "footer": "© {year} La Charderie — App made by Léo Otshudi."
+  },
+  "Orders": {
+    "title": "My order history",
+    "new": "New order",
+    "empty": "You haven't placed any orders yet.",
+    "orderOf": "Order from",
+    "total": "Total",
+    "quantity": "Quantity",
+    "productFallback": "Product",
+    "status": {
+      "received": "Received",
+      "delivered": "Delivered",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "errors": {
+      "notLogged": "You must be logged in as a camper to view your orders.",
+      "load": "Error while loading orders",
+      "loadPrefix": "Unable to load orders"
+    }
+  },
+  "OrderForm": {
+    "title": "New order",
+    "subtitle": "Choose your products and adjust the quantities using the buttons below.",
+    "emptyProducts": "No products available at the moment.",
+    "cancel": "Cancel",
+    "summary": "Order summary",
+    "summaryTitle": "Order summary",
+    "submit": "Place my order",
+    "submitting": "Submitting…",
+    "total": "Total",
+    "close": "Close",
+    "errors": {
+      "loadProducts": "Unable to load products",
+      "missingBooking": "Missing booking id.",
+      "noItems": "Please add at least one product with a valid quantity.",
+      "createOrder": "Error while creating the order"
+    },
+    "toasts": {
+      "loadProductsError": "Unable to fetch products.",
+      "created": "Order successfully created!"
+    },
+    "aria": {
+      "close": "Close",
+      "increment": "Add one {name}",
+      "decrement": "Remove one {name}"
+    }
   }
 }

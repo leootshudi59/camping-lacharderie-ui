@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import { Product } from '@/types/product';
@@ -39,6 +40,9 @@ export default function OrderForm({
   onClose,
   onCreated,
 }: OrderFormProps) {
+  const t = useTranslations('QuickIdentityForm');
+  const locale = useLocale();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [items, setItems] = useState<OrderItemInput[]>([
@@ -179,13 +183,13 @@ export default function OrderForm({
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <h2 className="text-lg font-semibold text-gray-800">
-          Nouvelle commande
+          {t('title')}
         </h2>
         <button
           type="button"
           onClick={onClose}
           className="p-1 rounded-full hover:bg-gray-100 transition"
-          aria-label="Fermer"
+          aria-label={t('aria.close')}
         >
           <X className="w-5 h-5 text-gray-500" />
         </button>
@@ -199,7 +203,7 @@ export default function OrderForm({
           </div>
         ) : products.length === 0 ? (
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm px-3 py-2 rounded-lg">
-            Aucun produit disponible pour le moment.
+            {t('emptyProducts')}
           </div>
         ) : (
           <>
@@ -210,7 +214,7 @@ export default function OrderForm({
             )}
 
             <p className="text-sm text-gray-600">
-              Choisissez vos produits et ajustez les quantités avec les boutons ci-dessous.
+              {t('emptyProducts')}
             </p>
 
             {/* Grille de produits façon "McDo" */}
@@ -257,6 +261,7 @@ export default function OrderForm({
                       <button
                         type="button"
                         onClick={() => handleIncrement(p.product_id)}
+                        aria-label={t('aria.increment', { name: p.name })}
                         className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-green-500 hover:bg-green-50 transition"
                       >
                         <Plus className="w-4 h-4 text-green-700" />
@@ -277,7 +282,7 @@ export default function OrderForm({
           onClick={onClose}
           className="w-full sm:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
         >
-          Annuler
+          {t('cancel')}
         </button>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -288,7 +293,7 @@ export default function OrderForm({
             className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg border border-green-500 px-4 py-2 text-sm font-semibold text-green-700 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
-            <span>Résumé de la commande</span>
+            <span>{t('summary')}</span>
             {totalQuantity > 0 && (
               <span className="ml-2 inline-flex items-center justify-center rounded-full bg-green-600 text-white text-xs px-2 py-0.5">
                 {totalQuantity}
@@ -306,7 +311,7 @@ export default function OrderForm({
             }
             className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
           >
-            {submitting ? 'Envoi en cours…' : 'Valider ma commande'}
+            {submitting ? t('submitting') : t('submit')}
           </button>
         </div>
       </div>
@@ -316,11 +321,12 @@ export default function OrderForm({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Résumé de la commande</h2>
+              <h2 className="text-lg font-semibold">{t('summaryTitle')}</h2>
               <button
                 type="button"
                 onClick={() => setIsSummaryOpen(false)}
                 className="p-1 rounded-full hover:bg-gray-100 transition"
+                aria-label={t('aria.close')}
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -353,7 +359,7 @@ export default function OrderForm({
             </ul>
 
             <div className="mt-4 flex justify-between border-t border-gray-100 pt-3 text-sm">
-              <span className="font-semibold text-gray-800">Total</span>
+              <span className="font-semibold text-gray-800">{t('total')}</span>
               <span className="font-semibold text-gray-900">
                 {totalPrice.toFixed(2)} €
               </span>
@@ -364,7 +370,7 @@ export default function OrderForm({
               onClick={() => setIsSummaryOpen(false)}
               className="mt-4 w-full inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 transition"
             >
-              Fermer
+              {t('close')}
             </button>
           </div>
         </div>

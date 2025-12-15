@@ -5,6 +5,7 @@ import { CalendarDays, CheckCircle, Clock, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Loader from '@/components/ui/Loader';
 import OrderForm from './OrderForm';
+import { useLocale, useTranslations } from 'next-intl';
 
 type GuestOrderItem = {
     order_item_id: string;
@@ -59,6 +60,8 @@ const statusLabels: Record<
 
 export default function UserGuestOrderList() {
     const { guestToken, guestBooking, logoutGuest } = useAuth();
+    const t = useTranslations('Orders');
+    const locale = useLocale();
 
     const [card, setCard] = useState<ReservationCard | null>(
         guestBooking ? mapToCard(guestBooking) : null
@@ -136,7 +139,7 @@ export default function UserGuestOrderList() {
     if (!guestToken) {
         return (
             <div className="max-w-2xl mx-auto px-4 py-8 text-center text-sm text-gray-600">
-                Vous devez être connecté en tant que campeur pour voir vos commandes.
+                {t('errors.notLogged')}
             </div>
         );
     }
@@ -146,7 +149,7 @@ export default function UserGuestOrderList() {
     if (error) {
         return (
             <div className="text-center text-red-600 my-6">
-                Impossible de charger les commandes : {error}
+                {t('errors.loadPrefix')} : {error}
             </div>
         );
     }
@@ -163,7 +166,7 @@ export default function UserGuestOrderList() {
         <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <h1 className="text-2xl font-bold text-green-700 text-center sm:text-left">
-                    Mon historique de commandes
+                    {t('title')}
                 </h1>
                 <button
                     type="button"
@@ -171,13 +174,13 @@ export default function UserGuestOrderList() {
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 transition w-full sm:w-auto"
                 >
                     <ShoppingCart className="w-4 h-4" />
-                    <span>Nouvelle commande</span>
+                    <span>{t('title')}</span>
                 </button>
             </div>
 
             {orders.length === 0 ? (
                 <div className="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 px-4 py-4 rounded-lg text-center">
-                    Vous n'avez pas encore passé de commande.
+                    {t('empty')}
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -193,7 +196,7 @@ export default function UserGuestOrderList() {
                                     <div className="flex items-center gap-2 text-gray-700 text-sm">
                                         <CalendarDays className="w-4 h-4 text-green-600" />
                                         <span>
-                                            Commande du{' '}
+                                            {t('orderOf')}{' '}
                                             {new Date(order.created_at).toLocaleDateString(
                                                 'fr-FR',
                                                 {
@@ -227,7 +230,7 @@ export default function UserGuestOrderList() {
                                             >
                                                 <div className="flex flex-col">
                                                     <span className="font-medium">
-                                                        {item.products?.name ?? 'Produit'}
+                                                        {item.products?.name ?? t('productFallback')}
                                                     </span>
                                                     {hasPrice && (
                                                         <span className="text-xs text-gray-500">
@@ -236,7 +239,7 @@ export default function UserGuestOrderList() {
                                                     )}
                                                     {!hasPrice && (
                                                         <span className="text-xs text-gray-500">
-                                                            Quantité : {item.quantity}
+                                                            {t('quantity')} : {item.quantity}
                                                         </span>
                                                     )}
                                                 </div>
@@ -252,7 +255,7 @@ export default function UserGuestOrderList() {
 
                                 {orderTotal > 0 && (
                                     <div className="flex justify-end text-sm font-semibold text-gray-900">
-                                        Total : {orderTotal.toFixed(2)} €
+                                        {t('total')} : {orderTotal.toFixed(2)} €
                                     </div>
                                 )}
                             </div>

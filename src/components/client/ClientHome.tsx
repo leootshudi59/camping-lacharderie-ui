@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
+import { Link, usePathname } from "@/i18n/routing";
 import { CalendarDays, ShoppingCart, AlertTriangle, MapPinned } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -25,6 +26,9 @@ const mapToCard = (b: any): ReservationCard => ({
 
 export default function ClientHome() {
   const { guestToken, guestBooking, logoutGuest } = useAuth();
+  const t = useTranslations('ClientHome');
+  const locale = useLocale();
+  
   const [card, setCard] = useState<ReservationCard | null>(
     guestBooking ? mapToCard(guestBooking) : null
   );
@@ -73,10 +77,10 @@ export default function ClientHome() {
           className="mb-4"
         />
         <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-2 tracking-tight text-center">
-          Bienvenue au Camping La Charderie
+          {t('title')}
         </h1>
         <p className="text-gray-600 text-lg text-center">
-          Profitez de votre séjour et gérez tout facilement ici !
+          {t('subtitle')}
         </p>
       </header>
 
@@ -87,20 +91,20 @@ export default function ClientHome() {
             <div className="flex-1 space-y-1">
               <div className="text-gray-800 font-bold text-lg">{card.name}</div>
               <div className="text-gray-600 text-sm">
-                <span className="font-medium">Nº réservation :</span> {card.bookingNumber}
+                <span className="font-medium">{t('booking.numberLabel')} :</span> {card.bookingNumber}
               </div>
               <div className="text-gray-600 text-sm">
-                <span className="font-medium">Emplacement :</span> {card.rentalName}
+                <span className="font-medium">{t('booking.rentalLabel')} :</span> {card.rentalName}
               </div>
               <div className="text-gray-600 text-sm">
-                <span className="font-medium">Fin du séjour :</span> {card.endDate}
+                <span className="font-medium">{t('booking.endLabel')} :</span> {card.endDate}
               </div>
             </div>
             <Link
               href={`/bookings/${card.bookingId}`} // tu gèreras le détail derrière
               className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition"
             >
-              Voir ma réservation
+              {t('booking.view')}
             </Link>
           </div>
         </section>
@@ -112,29 +116,29 @@ export default function ClientHome() {
           <Link href="/inventory" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
             <AlertTriangle className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
             <div>
-              <span className="text-lg font-semibold text-gray-800">État des lieux</span>
-              <p className="text-gray-500 text-sm">Remplir votre inventaire d'arrivée</p>
+              <span className="text-lg font-semibold text-gray-800">{t('cards.inventory.title')}</span>
+              <p className="text-gray-500 text-sm">{t('cards.inventory.desc')}</p>
             </div>
           </Link>
           <Link href="/orders" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
             <ShoppingCart className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
             <div>
-              <span className="text-lg font-semibold text-gray-800">Commandes</span>
-              <p className="text-gray-500 text-sm">Commander du pain, ou autres produits pour petit déjeuner</p>
+              <span className="text-lg font-semibold text-gray-800">{t('cards.orders.title')}</span>
+              <p className="text-gray-500 text-sm">{t('cards.orders.desc')}</p>
             </div>
           </Link>
           <Link href="/events" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
             <CalendarDays className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
             <div>
-              <span className="text-lg font-semibold text-gray-800">Événements</span>
-              <p className="text-gray-500 text-sm">Découvrir les animations du camping</p>
+              <span className="text-lg font-semibold text-gray-800">{t('cards.events.title')}</span>
+              <p className="text-gray-500 text-sm">{t('cards.events.desc')}</p>
             </div>
           </Link>
           <Link href="/map" className="group rounded-2xl bg-white shadow-md p-6 flex items-center transition hover:bg-green-50 hover:shadow-lg">
             <MapPinned className="w-8 h-8 text-green-500 mr-4 group-hover:scale-110 transition" />
             <div>
-              <span className="text-lg font-semibold text-gray-800">Carte du camping</span>
-              <p className="text-gray-500 text-sm">Se repérer facilement sur place</p>
+              <span className="text-lg font-semibold text-gray-800">{t('cards.map.title')}</span>
+              <p className="text-gray-500 text-sm">{t('cards.map.desc')}</p>
             </div>
           </Link>
         </div>
@@ -142,7 +146,7 @@ export default function ClientHome() {
 
       {/* Footer */}
       <footer className="py-8 text-center text-xs text-gray-400">
-        © {new Date().getFullYear()} La Charderie — Application réalisée par Léo Otshudi.
+        {t('footer', { year: new Date().getFullYear() })}
       </footer>
     </div>
   );

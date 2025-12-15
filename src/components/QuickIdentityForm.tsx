@@ -1,15 +1,12 @@
-// src/components/QuickIdentityForm.tsx
-
 'use client';
 
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { notifySuccess } from '@/lib/toast';
 import FormField from './ui/FormField';
-import { useLocale, useTranslations } from 'next-intl';
-import LanguageSwitcher from './ui/LangageSwitcher';
 
 export default function QuickIdentityForm() {
   const t = useTranslations('QuickIdentityForm');
